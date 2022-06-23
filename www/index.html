@@ -2,18 +2,28 @@
 <html>
     <head>
         <style>
-            .video_eye {
+            html, body {
+                margin: 0;
+            }
+
+            #lefttag {
                 position: absolute;
-                width: 50%;
-                height: 100%;
-                top: 0;
+                transform: rotate(270deg);
+                transform-origin: top left;
+                width: 100vh;
+                height: 50vw;
+                margin-top: 100vh;
                 object-fit: cover;
             }
-            #lefttag {
-                left: 0;
-            }
             #righttag {
-                right: 0;
+                position: absolute;
+                transform: rotate(90deg);
+                transform-origin: bottom left;
+                width: 100vh;
+                height: 50vw;
+                margin-top: -50vw;
+                margin-left: 50vw;
+                object-fit: cover;
             }
         </style>
     </head>
