@@ -1,6 +1,10 @@
 # eit-robotic-avatar
 Move humans into robots. 
 
+## Usage
+
+`poetry run server` to start the main server application.
+
 ## Development
 This project uses dev containers for development so all the tools/scrips needed to setup a working environment should be in the `.devcontainer` folder.
 
