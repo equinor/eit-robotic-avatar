@@ -5,19 +5,6 @@ const rightCam = "2c2de863e9ae1abcc37d6cdecf5cdbfbd27b5d7ef916b7545ffef22cf72c8e
 const rightTag = "#righttag"
 
 /**
- * @param {string} cam
- * @param {string} tag
- * @return {Promise<MediaStream>}
- */
-async function loadWebCam(cam, tag) {
-    let video = document.querySelector(tag);
-    let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam } });
-    // @ts-ignore
-    video.srcObject = stream;
-    return stream;
-}
-
-/**
  * @return {Promise<{left:MediaStream, right:MediaStream}>}
  */
 export async function loadCams(){
@@ -38,4 +25,32 @@ export async function loadCams(){
     });
 
     return cams;
+}
+
+export function loadRtc(streams){
+    loadStream(streams.left, leftTag);
+    loadStream(streams.right, rightTag);
+}
+
+/* ---- Private stuff --- */
+
+/**
+ * @param {string} cam
+ * @param {string} tag
+ * @return {Promise<MediaStream>}
+ */
+ async function loadWebCam(cam, tag) {
+    let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam } });
+    loadStream(stream, tag)
+    return stream;
+}
+
+/**
+ * @param {MediaStream} stream
+ * @param {string} tag
+ */
+ function loadStream(stream, tag) {
+    let video = document.querySelector(tag);
+    // @ts-ignore
+    video.srcObject = stream;
 }

@@ -36,3 +36,17 @@ def put_offer():
 @app.route('/get_offer', methods=['GET'])
 def get_offer():
     return OFFER
+
+# Same evil just for answers
+ANSWER = {}
+
+@app.route('/post_answer', methods=['POST'])
+def put_answer():
+    global ANSWER
+    ANSWER = request.json
+    print(ANSWER)
+    return {}
+
+@app.route('/get_answer', methods=['GET'])
+def get_answer():
+    return ANSWER
