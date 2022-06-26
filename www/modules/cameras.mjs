@@ -14,12 +14,6 @@ async function loadWebCam(cam, tag) {
     let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam } });
     // @ts-ignore
     video.srcObject = stream;
-
-    let devices = await navigator.mediaDevices.enumerateDevices();
-    devices.forEach(function(device) {
-        console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
-    });
-
     return stream;
 }
 
