@@ -28,7 +28,9 @@ OFFER = {}
 @app.route('/post_offer', methods=['POST'])
 def put_offer():
     global OFFER
+    global ANSWER
     OFFER = request.json
+    ANSWER = {}
     print(OFFER)
     return {}
 
@@ -42,8 +44,10 @@ ANSWER = {}
 
 @app.route('/post_answer', methods=['POST'])
 def put_answer():
+    global OFFER
     global ANSWER
     ANSWER = request.json
+    OFFER = {}
     print(ANSWER)
     return {}
 

@@ -50,6 +50,7 @@ export function loadRtc(streams){
  * @param {string} tag
  */
  function loadStream(stream, tag) {
+    console.log(stream, tag);
     let video = document.querySelector(tag);
     // @ts-ignore
     video.srcObject = stream;

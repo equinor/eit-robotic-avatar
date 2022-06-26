@@ -8,12 +8,8 @@ export class Connection {
         this.left = left;
         this.right = right;
 
-        left.onconnectionstatechange = ev => {
-            console.log("left.connectionState = ", left.connectionState);
-        }
-        right.onconnectionstatechange = ev => {
-            console.log("right.connectionState = ", left.connectionState);
-        }
+        registerEvents(left, "left");
+        registerEvents(right, "right");
     }
 
     async createOffers() {
@@ -79,7 +75,10 @@ export async function fromOffers(offers) {
 async function createOffer(peer) {
     let offer = await peer.createOffer();
     peer.setLocalDescription(offer);
-    return offer;
+    while (peer.iceGatheringState != "complete"){
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return peer.localDescription;
 }
 
 /**
@@ -88,7 +87,10 @@ async function createOffer(peer) {
  async function createAnswer(peer) {
     let offer = await peer.createAnswer();
     peer.setLocalDescription(offer);
-    return offer;
+    while (peer.iceGatheringState != "complete"){
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    return peer.localDescription;
 }
 
 /**
@@ -99,6 +101,7 @@ function getStream(peer) {
     for (const track of peer.getReceivers()) {
         stream.addTrack(track.track)
     }
+    return stream;
 }
 
 /**
@@ -116,4 +119,37 @@ async function fromOffer(offer) {
     let peer = new RTCPeerConnection();
     await peer.setRemoteDescription(offer);
     return peer
+}
+
+/**
+ * @param {RTCPeerConnection} peer
+ */
+function registerEvents(peer, side) {
+    peer.onconnectionstatechange = e => {
+        console.log(side, "onconnectionstatechange", peer.connectionState)
+    }
+    peer.ondatachannel = e => {
+        console.log(side, "ondatachannel")
+    }
+    peer.onicecandidate = e => {
+        console.log(side, "onicecandidate", e.candidate)
+    }
+    peer.onicecandidateerror = e => {
+        console.log(side, "onicecandidateerror")
+    }
+    peer.oniceconnectionstatechange = e => {
+        console.log(side, "oniceconnectionstatechange", peer.iceConnectionState)
+    }
+    peer.onicegatheringstatechange = e => {
+        console.log(side, "onicegatheringstatechange", peer.iceGatheringState)
+    }
+    peer.onnegotiationneeded = e => {
+        console.log(side, "onnegotiationneeded")
+    }
+    peer.onsignalingstatechange = e => {
+        console.log(side, "onsignalingstatechange", peer.signalingState)
+    }
+    peer.ontrack = e => {
+        console.log(side, "ontrack")
+    }
 }
