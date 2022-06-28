@@ -40,7 +40,7 @@ export function loadRtc(streams){
  * @return {Promise<MediaStream>}
  */
  async function loadWebCam(cam, tag) {
-    let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam } });
+    let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam, width: 1920, height: 1080 } });
     loadStream(stream, tag)
     return stream;
 }

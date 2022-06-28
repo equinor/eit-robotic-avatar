@@ -20,4 +20,8 @@ async function main() {
 }
 
 document.getElementById("start").onclick = main();
+document.getElementById("fullscreen").onclick = function () {
+    document.body.requestFullscreen();
+    document.getElementById("fullscreen").hidden = true;
+}
 
