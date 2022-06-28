@@ -10,11 +10,14 @@ async function main() {
         let answer = await con.createAnswers();
         console.log(answer);
         await postAnswer(answer);
-        loadRtc(con.getStreams());
+        let streams = con.getStreams();
+        loadRtc(streams);
+        console.log(streams, streams.left.getTracks(), streams.right.getTracks());
+        document.getElementById("start").hidden = true;
     } catch (err) {
         console.log(err.name + ": " + err.message);
     }
 }
 
-await main();
+document.getElementById("start").onclick = main();
 

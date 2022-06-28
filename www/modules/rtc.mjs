@@ -46,6 +46,12 @@ export class Connection {
 
         await Promise.all([left, right]);
     }
+
+    isConnected() {
+        let left = this.left.connectionState === "connected";
+        let right = this.left.connectionState === "connected";
+        return left && right;
+    }
 }
 
 /**
