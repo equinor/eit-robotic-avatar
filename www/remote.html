@@ -25,12 +25,28 @@
                 margin-left: 50vw;
                 object-fit: cover;
             }
+
+            #start {
+                position: absolute;
+                width: 200px;
+                height: 200px;
+            }
+            
+            #fullscreen {
+                position: absolute;
+                top: 200px;
+                width: 200px;
+                height: 200px;
+            }
         </style>
     </head>
     <body>
-        <video autoplay="true" class="video_eye" id="lefttag"></video>
-        <video autoplay="true" class="video_eye" id="righttag"></video>
+        <video autoplay="true" id="lefttag"></video>
+        <video autoplay="true" id="righttag"></video>
+
+        <button id="start">START</button>
+        <button id="fullscreen">Fullscreen</button>
         
-        <script src="remote.js"></script>
+        <script type="module" src="remote.mjs"></script>
     </body>
 </html>
