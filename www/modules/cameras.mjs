@@ -1,22 +1,15 @@
 //@ts-check
 const leftCam = "f0914100f10755b1b9414d0b890e88ca9e14caec37cbe17380b782254f87d162";
-const leftTag = "#lefttag"
+const leftHtmlId = "lefttag"
 const rightCam = "2c2de863e9ae1abcc37d6cdecf5cdbfbd27b5d7ef916b7545ffef22cf72c8efa";
-const rightTag = "#righttag"
+const rightHtmlId = "righttag"
 
 /**
  * @return {Promise<{left:MediaStream, right:MediaStream}>}
  */
 export async function loadCams(){
-    // Don't use await her as i want load cams in parallel.
-    let left = loadWebCam(leftCam, leftTag);
-    let right = loadWebCam(rightCam, rightTag);
-
-    // Awaiting bot cams
-    let cams = {
-        left: await left,
-        right: await right,
-    }
+    const c = CamerasFromTags();
+    c.loadFromUser();
 
     // log list of devices to console.
     let devices = await navigator.mediaDevices.enumerateDevices();
@@ -24,35 +17,58 @@ export async function loadCams(){
         console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
     });
 
-    return cams;
+    // @ts-ignore
+    return c.getStreams();
 }
 
 export function loadRtc(streams){
-    loadStream(streams.left, leftTag);
-    loadStream(streams.right, rightTag);
+    const c = CamerasFromTags();
+    c.setStreams(streams);
 }
 
-/* ---- Private stuff --- */
+export default class Cameras{
+    /**
+     * @param {HTMLVideoElement} left
+     * @param {HTMLVideoElement} right
+     */
+    constructor(left, right) {
+        this.left = left;
+        this.right = right;
+    }
 
-/**
- * @param {string} cam
- * @param {string} tag
- * @return {Promise<MediaStream>}
- */
- async function loadWebCam(cam, tag) {
-    let stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: cam, width: 1920, height: 1080 } });
-    loadStream(stream, tag)
-    return stream;
+    async loadFromUser(leftId = leftCam, rightId = rightCam) {
+        // Don't use await her as i want load cams in parallel.
+        const left = navigator.mediaDevices.getUserMedia({ video: { deviceId: leftId, width: 1920, height: 1080 } });
+        const right = navigator.mediaDevices.getUserMedia({ video: { deviceId: rightId, width: 1920, height: 1080 } });
+
+        // Awaiting both cams
+        let streams = {
+            left: await left,
+            right: await right,
+        }
+
+        this.setStreams(streams);
+    }
+
+    setStreams(streams) {
+        this.left.srcObject = streams.left;
+        this.right.srcObject = streams.right;
+    }
+
+    getStreams() {
+        return {
+            left: this.left.srcObject,
+            right: this.right.srcObject
+        }
+    }
 }
 
-/**
- * @param {MediaStream} stream
- * @param {string} tag
- */
- function loadStream(stream, tag) {
-    let video = document.querySelector(tag);
-    // @ts-ignore
-    video.srcObject = stream;
-    // @ts-ignore
-    //video.play();
+// Private
+
+function CamerasFromTags() {
+    return new Cameras(
+        // @ts-ignore
+        document.getElementById(leftHtmlId),
+        document.getElementById(rightHtmlId)
+    )
 }

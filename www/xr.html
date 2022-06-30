@@ -4,8 +4,17 @@
     </head>
     <body>
         <button id="vr">DO IT!!!</button>
-        <canvas id="glcanvas"></canvas>
+        <video id="leftVideo" autoplay playsinline style="display:none"></video>
+        <video id="rightVideo" autoplay playsinline style="display:none"></video>
 
+        
+        <script type="importmap">
+            {
+              "imports": {
+                "three": "https://unpkg.com/three@0.142.0/build/three.module.js"
+              }
+            }
+          </script>
         <script type="module" src="xr.mjs"></script>
     </body>
 </html>
