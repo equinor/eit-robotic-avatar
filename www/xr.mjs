@@ -33,6 +33,7 @@ async function setup3D(cameras) {
         canvas: document.getElementById("view")
     });
 
+    renderer.setSize(3664, 1920, false); 
     renderer.xr.enabled = true;
     renderer.xr.cameraAutoUpdate = false;
     renderer.xr.getCamera = function() {
@@ -61,32 +62,14 @@ async function setup3D(cameras) {
     );
     right.position.x = 0.5;
     scene.add( right );
-
   
+
     renderer.setAnimationLoop( function () {
         renderer.render( scene, camera );
     } );
 
     document.body.appendChild( VRButton.createButton( renderer ) );
 
-//    document.getElementById("VR").hidden = false;
-//    document.getElementById("VR").onclick = async function xrmain() {
-//        document.getElementById("VR").hidden = true;
-//        let xr = navigator.xr;
-    
-//        let session = await xr.requestSession("immersive-vr");
-    
-//        function vrframe(time, frame) {
-//            renderer.render( scene, camera );
-//            session.requestAnimationFrame(vrframe);
-//        }
-
-//        session.updateRenderState({
-//            baseLayer: new XRWebGLLayer(session, renderer.getContext())
-//        });
-//    
-//        session.requestAnimationFrame(vrframe);
-//    }
 }
 
 document.getElementById("VR").hidden = true;
