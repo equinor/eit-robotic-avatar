@@ -9,7 +9,7 @@ const rightHtmlId = "righttag"
  */
 export async function loadCams(){
     const c = CamerasFromTags();
-    c.loadFromUser();
+    let streams = c.loadFromUser();
 
     // log list of devices to console.
     let devices = await navigator.mediaDevices.enumerateDevices();
@@ -17,8 +17,7 @@ export async function loadCams(){
         console.log(device.kind + ": " + device.label + " id = " + device.deviceId);
     });
 
-    // @ts-ignore
-    return c.getStreams();
+    return streams;
 }
 
 export function loadRtc(streams){
@@ -48,6 +47,7 @@ export default class Cameras{
         }
 
         this.setStreams(streams);
+        return streams;
     }
 
     setStreams(streams) {

@@ -1,23 +1,49 @@
 import * as THREE from 'three';
 import Cameras from "./modules/cameras.mjs";
 
+import { fromOffers } from "./modules/rtc.mjs";
+import { pullOffers, postAnswer } from "./modules/server.mjs";
+
+import { VRButton } from 'https://unpkg.com/three@0.142.0/examples/jsm/webxr/VRButton.js';
+
 async function main() {
+    try {
+        document.getElementById("start").hidden = true;
+        let offers = await pullOffers();
+        console.log(offers);
+        let con = await fromOffers(offers);
+        let answer = await con.createAnswers();
+        console.log(answer);
+        await postAnswer(answer);
+        let streams = con.getStreams();
+        const cameras = new Cameras(document.getElementById("leftVideo"), document.getElementById("rightVideo"));
+        cameras.setStreams(streams)
+        await setup3D(cameras);
+    } catch (err) {
+        console.log(err.name + ": " + err.message);
+    }
+}
+
+async function setup3D(cameras) {
     const scene = new THREE.Scene();
-    const height = window.innerHeight;
-    const width = window.innerWidth;
 
     const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, -1, 1  );
 
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
+    const renderer = new THREE.WebGLRenderer({
+        canvas: document.getElementById("view")
+    });
 
-    const cameras = new Cameras(document.getElementById("leftVideo"), document.getElementById("rightVideo"));
-    await cameras.loadFromUser();
+    renderer.xr.enabled = true;
+    renderer.xr.cameraAutoUpdate = false;
+    renderer.xr.getCamera = function() {
+        return camera;
+    }
+
+    document.body.appendChild( renderer.domElement );
 
     const textureLeft = new THREE.VideoTexture( cameras.left );
     textureLeft.center = new THREE.Vector2( 0.5, 0.5 )
-    textureLeft.rotation = 90 * 3 * (Math.PI/180);
+    textureLeft.rotation = 90  * (Math.PI/180);
 
     const left = new THREE.Mesh(
         new THREE.PlaneGeometry( 1, 2 ),
@@ -28,7 +54,7 @@ async function main() {
 
     const textureRight= new THREE.VideoTexture( cameras.right );
     textureRight.center = new THREE.Vector2( 0.5, 0.5 )
-    textureRight.rotation = 90 * (Math.PI/180);
+    textureRight.rotation = 90 * 3 * (Math.PI/180);
     const right = new THREE.Mesh(
         new THREE.PlaneGeometry( 1, 2 ),
         new THREE.MeshBasicMaterial( { map: textureRight } )
@@ -36,39 +62,33 @@ async function main() {
     right.position.x = 0.5;
     scene.add( right );
 
-    function animate() {
-        requestAnimationFrame( animate );
+  
+    renderer.setAnimationLoop( function () {
         renderer.render( scene, camera );
-    }
-    animate();
+    } );
+
+    document.body.appendChild( VRButton.createButton( renderer ) );
+
+//    document.getElementById("VR").hidden = false;
+//    document.getElementById("VR").onclick = async function xrmain() {
+//        document.getElementById("VR").hidden = true;
+//        let xr = navigator.xr;
+    
+//        let session = await xr.requestSession("immersive-vr");
+    
+//        function vrframe(time, frame) {
+//            renderer.render( scene, camera );
+//            session.requestAnimationFrame(vrframe);
+//        }
+
+//        session.updateRenderState({
+//            baseLayer: new XRWebGLLayer(session, renderer.getContext())
+//        });
+//    
+//        session.requestAnimationFrame(vrframe);
+//    }
 }
 
-async function xrmain() {
-    let xr = navigator.xr;
+document.getElementById("VR").hidden = true;
+document.getElementById("start").onclick = main;
 
-    let session = await xr.requestSession("immersive-vr");
-
-    let ref_frame = await session.requestReferenceSpace("local");
-
-    function vrframe(time, frame) {
-        console.log(frame.getViewerPose(ref_frame).transform.orientation.toJSON());
-
-       renderer.render( scene, camera );
-        session.requestAnimationFrame(vrframe);
-    }
-    
-    window.vrtest = session;
-    window.vr_frame = vrframe;
-
-    
-    let glCanvas = document.getElementById("glcanvas");
-    let gl = glCanvas.getContext("webgl", { xrCompatible: true });
-
-    session.updateRenderState({
-        baseLayer: new XRWebGLLayer(session, gl)
-    });
-
-    session.requestAnimationFrame(vrframe);
-}
-
-document.getElementById("vr").onclick = main;
