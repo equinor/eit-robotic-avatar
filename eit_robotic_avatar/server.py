@@ -54,3 +54,7 @@ def put_answer():
 @app.route('/get_answer', methods=['GET'])
 def get_answer():
     return ANSWER
+
+@app.route('/post_pos', methods=['POST'])
+def post_pos():
+    return ANSWER

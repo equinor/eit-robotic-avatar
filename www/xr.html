@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            html, body {
+                margin: 0;
+            }
+
+            #view {
+                position: absolute;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #start {
+                position: absolute;
+                width: 200px;
+                height: 200px;
+            }
+            
+            #VR {
+                position: absolute;
+                top: 200px;
+                width: 200px;
+                height: 200px;
+            }
+        </style>
+    </head>
+    <body>
+      <canvas id="view"></canvas>
+
+      <button id="start">START</button>
+      <button id="VR">Enter VR</button>
+      <video id="leftVideo" autoplay playsinline style="display:none"></video>
+      <video id="rightVideo" autoplay playsinline style="display:none"></video>
+
+      
+      <script type="importmap">
+          {
+            "imports": {
+              "three": "https://unpkg.com/three@0.142.0/build/three.module.js"
+            }
+          }
+        </script>
+      <script type="module" src="xr.mjs"></script>
+    </body>
+</html>
