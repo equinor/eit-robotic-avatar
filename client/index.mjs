@@ -18,4 +18,4 @@ async function main() {
     window.robotic_avatar = app;
 }
 
-await main();
+main().catch(console.error);
