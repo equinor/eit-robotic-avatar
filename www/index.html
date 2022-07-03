@@ -3,37 +3,38 @@
     <head>
         <title>Robotic Avatar</title>
         <link href="index.css" rel="stylesheet" />
+        <script type="module" async src="index.mjs"></script>
     </head>
     <body>
         <main id="robotic_avatar">
-            <section>
-                <header>Left Camera Settings</header>
-                <div id="left_cam"> Not Implemented </div>
-                <footer id="left_cam_status" class="error"> Not Implemented</footer>
+            <section class="left_video">
+                <header>Left Video Settings</header>
+                <section id="left_video"> Loading </section>
+                <footer id="left_video_status" class="error">Not Loaded</footer>
             </section>
-            <section>
+            <section class="view">
                 <header>Preview Viewport</header>
-                <div id="viewport"> Not Implemented </div>
+                <section id="viewport"> Not Implemented </section>
                 <footer id="viewport_status" class="error"> Not Implemented</footer>
             </section>
-            <section>
-                <header>Right Camera Settings</header>
-                <div id="right_cam"> Not Implemented </div>
-                <footer id="right_cam_status" class="error"> Not Implemented</footer>
+            <section class="right_video">
+                <header>Right Video Settings</header>
+                <section id="right_video"> Loading </section>
+                <footer id="right_video_status" class="error"> Not Loaded </footer>
             </section>
-            <section>
+            <section class="neck">
                 <header>Neck Robot Settings</header>
-                <div id="neck"> Not Implemented </div>
+                <section id="neck"> Not Implemented </section>
                 <footer id="neck_status" class="error"> Not Implemented</footer>
             </section>
-            <section>
+            <section class="network">
                 <header>Networking Settings</header>
-                <div id="network"> Not Implemented </div>
-                <footer id="network_status"> Not Implemented</footer>
+                <section id="network"> Not Implemented </section>
+                <footer id="network_status" class="error"> Not Implemented</footer>
             </section>
-            <section>
+            <section class="car">
                 <header>Links to old pages</header>
-                <div>
+                <section>
                     <h1>Robotic Avatar Level 1 demo</h1>
                     <ul>
                         <li><a href="local.html">Local Camera</a></li>
@@ -41,7 +42,7 @@
                         <li><a href="remote.html">Remote Camera View</a></li>
                         <li><a href="xr.html">WebXR Playground</a></li>
                     </ul>
-                </div>
+                </section>
                 <footer id="right_cam_status" class="warn"> To old </footer>
             </section>
         </main>

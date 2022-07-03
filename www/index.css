@@ -6,8 +6,12 @@ html, body {
 main {
     height: 100%;
     display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-columns: 3fr 2fr 5fr 2fr 3fr;
     grid-template-rows: 2fr 1fr;
+    grid-template-areas: 
+        "left-video view view view right-video"
+        "neck neck network car car ";
+
     gap: 5px 5px;
     background-color: black;
 }
@@ -20,6 +24,25 @@ main > section {
 
 main > section > * {
     background-color: white;
+}
+
+.left-video  {
+    grid-area: left-video;
+}
+.view  {
+    grid-area: view;
+}
+.right-video  {
+    grid-area: right-video;
+}
+.neck {
+    grid-area: neck;
+}
+.network  {
+    grid-area: network;
+}
+.car  {
+    grid-area: car;
 }
 
 main > section > header {
