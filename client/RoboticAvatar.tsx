@@ -1,55 +1,55 @@
 import React from "react";
 import Status from "./src/status";
-import Video from "./src/video";
+import Video from "./src/Video";
 
-import "./index.css"
+import styled from "styled-components";
+import Module from "./src/Module";
+
+const Layout = styled.main`
+    height: 100%;
+    display: grid;
+    grid-template-columns: 3fr 2fr 5fr 2fr 3fr;
+    grid-template-rows: 2fr 1fr;
+    grid-template-areas: 
+        "left-video view view view right-video"
+        "neck neck network car car";
+    gap: 16px 16px;
+    background-color: rgb(220, 220, 220);
+    padding: 8px;
+`
+
+const LeftVideo = styled(Module)`
+     grid-area: left-video;
+`
+const View = styled(Module)`
+    grid-area: view;
+`
+const RightVideo = styled(Module)`
+    grid-area: right-video;
+`
+const Neck = styled(Module)`
+    grid-area: neck;
+`
+const Network = styled(Module)`
+    grid-area: network;
+`
+const Car = styled(Module)`
+    grid-area: car;
+`
 
 export class RoboticAvatar extends React.Component {
-    private left_video: React.RefObject<HTMLElement> = React.createRef();
-    private left_video_status: React.RefObject<HTMLElement> = React.createRef();
     private right_video: React.RefObject<HTMLElement> = React.createRef();
     private right_video_status: React.RefObject<HTMLElement> = React.createRef();
 
     render(): React.ReactNode {
-        return <>
-            <section className="left_video">
-                <header>Left Video Settings</header>
-                <section ref={this.left_video}> Loading </section>
-                <footer ref={this.left_video_status} className="error">Not Loaded</footer>
-            </section>
-            <section className="view">
-                <header>Preview Viewport</header>
-                <section id="viewport"> Not Implemented </section>
-                <footer id="viewport_status" className="error"> Not Implemented</footer>
-            </section>
-            <section className="right_video">
-                <header>Right Video Settings</header>
-                <section ref={this.right_video}> Loading </section>
-                <footer ref={this.right_video_status} className="error"> Not Loaded </footer>
-            </section>
-            <section className="neck">
-                <header>Neck Robot Settings</header>
-                <section id="neck"> Not Implemented </section>
-                <footer id="neck_status" className="error"> Not Implemented</footer>
-            </section>
-            <section className="network">
-                <header>Networking Settings</header>
-                <section id="network"> Not Implemented </section>
-                <footer id="network_status" className="error"> Not Implemented</footer>
-            </section>
-            <section className="car">
-                <header>Car Settings</header>
-                <section id="network"> Not Implemented </section>
-                <footer id="network_status" className="error"> Not Implemented</footer>
-            </section>
-        </> 
-    }
+        return <Layout>
+            <LeftVideo title="Left Video Setting" status="error" message="Not Implemented">Not Implemented</LeftVideo>
+            <View title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</View>
+            <RightVideo title="Right Video Setting" status="error" message="Not Implemented">Not Implemented</RightVideo>
 
-    componentDidMount() {
-        const left_video_status = new Status(this.left_video_status.current!);
-        const left_video = new Video(this.left_video.current!, left_video_status);
-
-        const right_video_status = new Status(this.right_video_status.current!);
-        const right_video = new Video(this.right_video.current!, right_video_status)
+            <Neck title="Neck Robot Setting" status="error" message="Not Implemented">Not Implemented</Neck>
+            <Network title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</Network>
+            <Car title="Car Settings" status="error" message="Not Implemented">Not Implemented</Car>
+        </Layout>
     }
 }
