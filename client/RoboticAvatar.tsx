@@ -1,9 +1,7 @@
 import React from "react";
-import Status from "./src/status";
-import Video from "./src/Video";
 
 import styled, { createGlobalStyle } from "styled-components";
-import Module from "./src/Module";
+import Module from "./views/Module";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
