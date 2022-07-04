@@ -55,7 +55,7 @@ export class RoboticAvatar extends React.Component {
             <RightVideo title="Right Video Setting" status="error" message="Not Implemented">Not Implemented</RightVideo>
 
             <Neck title="Neck Robot Setting" status="error" message="Not Implemented">Not Implemented</Neck>
-            <Network title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</Network>
+            <Network title="Networking Settings" status="error" message="Not Implemented">Not Implemented</Network>
             <Car title="Car Settings" status="error" message="Not Implemented">Not Implemented</Car>
         </Layout>
     }
