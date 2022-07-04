@@ -2,12 +2,20 @@ import React from "react";
 import Status from "./src/status";
 import Video from "./src/Video";
 
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import Module from "./src/Module";
+
+const GlobalStyle = createGlobalStyle`
+    html, body, #robotic_avatar {
+        margin: 0;
+        height: 100%;
+    }
+`
 
 const Layout = styled.main`
     height: 100%;
     display: grid;
+    box-sizing: border-box;
     grid-template-columns: 3fr 2fr 5fr 2fr 3fr;
     grid-template-rows: 2fr 1fr;
     grid-template-areas: 
@@ -43,6 +51,7 @@ export class RoboticAvatar extends React.Component {
 
     render(): React.ReactNode {
         return <Layout>
+            <GlobalStyle/>
             <LeftVideo title="Left Video Setting" status="error" message="Not Implemented">Not Implemented</LeftVideo>
             <View title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</View>
             <RightVideo title="Right Video Setting" status="error" message="Not Implemented">Not Implemented</RightVideo>
