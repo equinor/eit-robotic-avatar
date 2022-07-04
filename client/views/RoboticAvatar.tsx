@@ -1,7 +1,9 @@
 import React from "react";
 
 import styled, { createGlobalStyle } from "styled-components";
-import Module from "./views/Module";
+import Module from "./Module";
+import Model from '../models/robot-avatar'
+import Video from "./Video";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
@@ -24,13 +26,13 @@ const Layout = styled.main`
     padding: 8px;
 `
 
-const LeftVideo = styled(Module)`
+const LeftVideo = styled(Video)`
      grid-area: left-video;
 `
 const View = styled(Module)`
     grid-area: view;
 `
-const RightVideo = styled(Module)`
+const RightVideo = styled(Video)`
     grid-area: right-video;
 `
 const Neck = styled(Module)`
@@ -42,17 +44,18 @@ const Network = styled(Module)`
 const Car = styled(Module)`
     grid-area: car;
 `
+interface RoboticAvatarProps {
+    model: Model
+}
 
-export class RoboticAvatar extends React.Component {
-    private right_video: React.RefObject<HTMLElement> = React.createRef();
-    private right_video_status: React.RefObject<HTMLElement> = React.createRef();
 
+export default class RoboticAvatar extends React.Component<RoboticAvatarProps> {
     render(): React.ReactNode {
         return <Layout>
             <GlobalStyle/>
-            <LeftVideo title="Left Video Setting" status="error" message="Not Implemented">Not Implemented</LeftVideo>
+            <LeftVideo title="Left Video Setting" model={this.props.model.left} />
             <View title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</View>
-            <RightVideo title="Right Video Setting" status="error" message="Not Implemented">Not Implemented</RightVideo>
+            <RightVideo title="Right Video Setting" model={this.props.model.right} />
 
             <Neck title="Neck Robot Setting" status="error" message="Not Implemented">Not Implemented</Neck>
             <Network title="Networking Settings" status="error" message="Not Implemented">Not Implemented</Network>
