@@ -2,7 +2,7 @@ import React from "react";
 
 import styled, { createGlobalStyle } from "styled-components";
 import Module from "./Module";
-import Model from '../models/robot-avatar'
+import Model from '../models/robotic-avatar'
 import Video from "./Video";
 
 const GlobalStyle = createGlobalStyle`

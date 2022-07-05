@@ -1,6 +1,6 @@
 import { Autocomplete, Button, Input, Label, NativeSelect, Slider, Switch, Typography } from "@equinor/eds-core-react";
 import React from "react";
-import Model from "../models/video"
+import Model, { VideoSource } from "../models/video"
 import Module from "./Module";
 
 interface VideoProps {
@@ -8,19 +8,37 @@ interface VideoProps {
     title: string,
 }
 
-export default class Video extends React.Component<VideoProps> {
+interface VideoState {
+    sources: VideoSource[],
+    connected: boolean;
+}
+
+export default class Video extends React.Component<VideoProps,VideoState> {
     constructor(props: VideoProps) {
         super(props);
-        props.model.onChange = this.modelChange;
-    }
-
-    modelChange= () => {
-        this.forceUpdate();
+        this.state = {
+            sources: [],
+            connected: this.props.model.show_local
+        };
     }
 
     connectedSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {
         this.props.model.show_local = !this.props.model.show_local;
+        this.setState({
+            sources: [],
+            connected: this.props.model.show_local
+        })
+        this.updateSources();
     };
+
+    updateSources() {
+        this.props.model.getSources().then((sources) => {
+            console.log(sources)
+            this.setState({
+                sources: sources
+            })
+        })
+    }
 
     render(): React.ReactNode {
         const model = this.props.model;
@@ -29,7 +47,7 @@ export default class Video extends React.Component<VideoProps> {
             <Typography variant="h5">Video Source</Typography>
             <Switch label="Show connected sources" onChange={this.connectedSwitch} checked={model.show_local} />
             <Switch label="Show remote sources" disabled />
-            <Autocomplete label="Devices:" options={[]} disabled />
+            <Autocomplete label="Video sources:" options={this.state.sources} optionLabel={(source) => source.label}/>
             <Label label="Resolution Height:" />
             <Input type="number" disabled/>
             <Label label="Resolution Width:" />
