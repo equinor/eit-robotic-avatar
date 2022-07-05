@@ -9,10 +9,25 @@ interface VideoProps {
 }
 
 export default class Video extends React.Component<VideoProps> {
+    constructor(props: VideoProps) {
+        super(props);
+        props.model.onChange = this.modelChange;
+    }
+
+    modelChange= () => {
+        this.forceUpdate();
+    }
+
+    connectedSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        this.props.model.show_local = !this.props.model.show_local;
+    };
+
     render(): React.ReactNode {
+        const model = this.props.model;
+
         return <Module title={this.props.title} status={"error"} message={"No Video Source Configured"}>
             <Typography variant="h5">Video Source</Typography>
-            <Switch label="Show connected sources" disabled />
+            <Switch label="Show connected sources" onChange={this.connectedSwitch} checked={model.show_local} />
             <Switch label="Show remote sources" disabled />
             <Autocomplete label="Devices:" options={[]} disabled />
             <Label label="Resolution Height:" />
