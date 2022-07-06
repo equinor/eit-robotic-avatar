@@ -1,4 +1,4 @@
-import Webcams from "../services/webcams";
+import {IWebcams} from "../services/webcams";
 
 export interface VideoSource {
     id: string,
@@ -9,7 +9,7 @@ export interface VideoSource {
 export default class Video{
     private _show_local = false;
 
-    constructor(private _webcams: Webcams){
+    constructor(private _webcams: IWebcams){
 
     }
 

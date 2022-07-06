@@ -33,7 +33,6 @@ export default class Video extends React.Component<VideoProps,VideoState> {
 
     updateSources() {
         this.props.model.getSources().then((sources) => {
-            console.log(sources)
             this.setState({
                 sources: sources
             })
