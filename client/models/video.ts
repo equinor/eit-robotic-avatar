@@ -8,6 +8,8 @@ export interface VideoSource {
 
 export default class Video{
     private _show_local = false;
+    private _stream: MediaStream = new MediaStream();
+    public onStream: () => void = noop;
 
     constructor(private _webcams: IWebcams){
 
@@ -23,11 +25,27 @@ export default class Video{
         }
     }
 
+    get stream(): MediaStream {
+        return this._stream;
+    }
+
     async getSources(): Promise<VideoSource[]> {
         return this.getLocalSources();
     }
 
-    async getLocalSources(): Promise<VideoSource[]>{
+    async setSource(source:VideoSource) {
+        let stream: MediaStream;
+        if (source.type === "local") {
+            stream = await this.getLocalStream(source.id);
+        } else {
+            throw new Error("Remote source not implemented");
+        }
+
+        this._stream = stream;
+        this.onStream();
+    }
+
+    private async getLocalSources(): Promise<VideoSource[]>{
         if(this._show_local){
             let devices = await this._webcams.getVideoSources();
             return devices
@@ -44,4 +62,10 @@ export default class Video{
             return [];
         }
     }
+
+    private async getLocalStream(deviceId: string): Promise<MediaStream> {
+        return this._webcams.getStream(deviceId);
+    }
 }
+
+const noop = () => {};

@@ -1,9 +1,14 @@
 export interface IWebcams {
+    getStream(deviceId: string): Promise<MediaStream>;
     getVideoSources(): Promise<MediaDeviceInfo[]>
 }
 
 /* istanbul ignore next */
 export class Webcams implements IWebcams{
+    async getStream(deviceId: string): Promise<MediaStream> {
+        return navigator.mediaDevices.getUserMedia({video: {deviceId: deviceId} , audio: false});
+    }
+
     async getVideoSources(): Promise<MediaDeviceInfo[]> {
         // Experimental Chrome only api
         let status = await navigator.permissions.query({name:'camera'} as any);

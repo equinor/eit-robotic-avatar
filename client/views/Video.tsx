@@ -1,4 +1,4 @@
-import { Autocomplete, Button, Input, Label, NativeSelect, Slider, Switch, Typography } from "@equinor/eds-core-react";
+import { Autocomplete, AutocompleteChanges, Button, Input, Label, NativeSelect, Slider, Switch, Typography } from "@equinor/eds-core-react";
 import React from "react";
 import Model, { VideoSource } from "../models/video"
 import Module from "./Module";
@@ -32,6 +32,10 @@ export default class Video extends React.Component<VideoProps,VideoState> {
         this.updateSources();
     };
 
+    handleSourceChange = (changes: AutocompleteChanges<VideoSource>) => {
+        this.props.model.setSource(changes.selectedItems[0]);
+    };
+
     updateSources() {
         this.props.model.getSources().then((sources) => {
             this.setState({
@@ -47,7 +51,7 @@ export default class Video extends React.Component<VideoProps,VideoState> {
             <Typography variant="h5">Video Source</Typography>
             <Switch label="Show connected sources" onChange={this.connectedSwitch} checked={model.show_local} />
             <Switch label="Show remote sources" disabled />
-            <Autocomplete label="Video sources:" options={this.state.sources} optionLabel={(source) => source.label}/>
+            <Autocomplete label="Video sources:" options={this.state.sources} optionLabel={(source) => source.label} onOptionsChange={this.handleSourceChange}/>
             <Label label="Resolution Height:" />
             <Input type="number" disabled/>
             <Label label="Resolution Width:" />

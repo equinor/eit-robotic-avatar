@@ -55,7 +55,7 @@ export default class RoboticAvatar extends React.Component<RoboticAvatarProps> {
         return <Layout>
             <GlobalStyle/>
             <LeftVideo title="Left Video Setting" model={this.props.model.left} />
-            <View/>
+            <View left={this.props.model.left} right={this.props.model.right}/>
             <RightVideo title="Right Video Setting" model={this.props.model.right} />
 
             <Neck title="Neck Robot Setting" status="error" message="Not Implemented">Not Implemented</Neck>

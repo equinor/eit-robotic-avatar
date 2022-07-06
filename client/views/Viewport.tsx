@@ -2,6 +2,7 @@ import { Button } from "@equinor/eds-core-react";
 import React from "react";
 import styled from "styled-components";
 import { Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Scene, Vector2, VideoTexture, WebGLRenderer } from "three";
+import VideoModel from "../models/video";
 import Module from "./Module";
 
 const Canvas = styled.canvas`
@@ -23,11 +24,15 @@ const Overlay = styled.div`
 `
 
 interface Props {
-    className?: string
+    className?: string,
+    left: VideoModel,
+    right: VideoModel,
 }
 
 interface State {
-    fps: number
+    fps: number,
+    left: MediaStream,
+    right: MediaStream,
 }
 
 export default class Viewport extends React.Component<Props, State>{
@@ -41,15 +46,30 @@ export default class Viewport extends React.Component<Props, State>{
         super(props);
 
         this.state = {
-            fps: 0
+            fps: 0,
+            left: this.props.left.stream,
+            right: this.props.right.stream,
         }
 
         this.canvas = React.createRef<HTMLCanvasElement>();
         this.left = React.createRef<HTMLVideoElement>();
         this.right = React.createRef<HTMLVideoElement>();
+
+        this.props.left.onStream = () => {
+            this.setState({
+                left: this.props.left.stream
+            })
+        }
+
+        this.props.right.onStream = () => {
+            this.setState({
+                right: this.props.right.stream
+            })
+        }
     }
 
     componentDidMount() {
+        this.updateVideoStream();
         const scene = new Scene();
 
         const camera = new OrthographicCamera( -1, 1, 1, -1, -1, 1  );
@@ -95,6 +115,10 @@ export default class Viewport extends React.Component<Props, State>{
         } );
     }
 
+    componentDidUpdate() {
+        this.updateVideoStream()
+    }
+
     render(): React.ReactNode {
         const msg = `Rendering at: 3664x1920 with ${this.state.fps} frames per second`
 
@@ -107,5 +131,18 @@ export default class Viewport extends React.Component<Props, State>{
             <HiddenVideo ref={this.left}/>
             <HiddenVideo ref={this.right}/>
         </Module>
+    }
+
+    updateVideoStream() {
+        // Update left video if needed
+        if (this.left.current!.srcObject !== this.state.left) {
+            this.left.current!.srcObject = this.state.left;
+            this.left.current!.play();
+        }
+        // Update right video if needed
+        if (this.right.current!.srcObject !== this.state.right) {
+            this.right.current!.srcObject = this.state.right;
+            this.right.current!.play();
+        }
     }
 }
