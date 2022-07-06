@@ -4,6 +4,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import Module from "./Module";
 import Model from '../models/robotic-avatar'
 import Video from "./Video";
+import Viewport from "./Viewport";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
@@ -29,7 +30,7 @@ const Layout = styled.main`
 const LeftVideo = styled(Video)`
      grid-area: left-video;
 `
-const View = styled(Module)`
+const View = styled(Viewport)`
     grid-area: view;
 `
 const RightVideo = styled(Video)`
@@ -54,7 +55,7 @@ export default class RoboticAvatar extends React.Component<RoboticAvatarProps> {
         return <Layout>
             <GlobalStyle/>
             <LeftVideo title="Left Video Setting" model={this.props.model.left} />
-            <View title="Preview Viewport" status="error" message="Not Implemented">Not Implemented</View>
+            <View/>
             <RightVideo title="Right Video Setting" model={this.props.model.right} />
 
             <Neck title="Neck Robot Setting" status="error" message="Not Implemented">Not Implemented</Neck>

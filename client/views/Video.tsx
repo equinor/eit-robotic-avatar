@@ -4,6 +4,7 @@ import Model, { VideoSource } from "../models/video"
 import Module from "./Module";
 
 interface VideoProps {
+    className?: string
     model: Model,
     title: string,
 }
@@ -42,7 +43,7 @@ export default class Video extends React.Component<VideoProps,VideoState> {
     render(): React.ReactNode {
         const model = this.props.model;
 
-        return <Module title={this.props.title} status={"error"} message={"No Video Source Configured"}>
+        return <Module className={this.props.className} title={this.props.title} status={"error"} message={"No Video Source Configured"}>
             <Typography variant="h5">Video Source</Typography>
             <Switch label="Show connected sources" onChange={this.connectedSwitch} checked={model.show_local} />
             <Switch label="Show remote sources" disabled />
