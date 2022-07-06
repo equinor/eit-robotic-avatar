@@ -1,10 +1,12 @@
 export interface IWebcams {
+    emptyStream: MediaStream;
     getStream(deviceId: string): Promise<MediaStream>;
     getVideoSources(): Promise<MediaDeviceInfo[]>
 }
 
 /* istanbul ignore next */
 export class Webcams implements IWebcams{
+    emptyStream: MediaStream = new MediaStream();
     async getStream(deviceId: string): Promise<MediaStream> {
         return navigator.mediaDevices.getUserMedia({video: {deviceId: deviceId} , audio: false});
     }

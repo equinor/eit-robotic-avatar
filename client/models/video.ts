@@ -8,11 +8,11 @@ export interface VideoSource {
 
 export default class Video{
     private _show_local = false;
-    private _stream: MediaStream = new MediaStream();
+    private _stream: MediaStream;
     public onStream: () => void = noop;
 
     constructor(private _webcams: IWebcams){
-
+        this._stream = this._webcams.emptyStream;
     }
 
     get show_local(): boolean {
