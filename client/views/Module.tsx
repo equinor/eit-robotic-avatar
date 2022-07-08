@@ -11,10 +11,14 @@ interface ModuleProp {
     message: string,
 }
 
-const ModuleGrid = styled.section`
+const Grid = styled.section`
     display: grid;
     grid-template-rows: min-content auto min-content;
     background-color: rgb(255, 255, 255);
+`
+
+const Container = styled.section`
+    position: relative;
 `
 
 const Status = styled(Typography)`
@@ -30,9 +34,9 @@ const Status = styled(Typography)`
 `
 
 export default function Module(props: ModuleProp) {
-    return <ModuleGrid className={props.className}>
+    return <Grid className={props.className}>
         <Typography variant="h4" as="header">{props.title}</Typography>
-        <section>{props.children}</section>
+        <Container>{props.children}</Container>
         <Status className={props.status} variant="body_short"> {props.message} </Status>
-    </ModuleGrid>
+    </Grid>
 }
