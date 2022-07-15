@@ -4,7 +4,14 @@ import RoboticAvatarModel from "./models/robotic-avatar";
 import { Webcams } from './services/webcams';
 import React from 'react';
 
+import * as rust from '../client-rust/pkg/';
+
 function main(){
+    // Rust test:
+    rust.default().then(() => {
+        rust.greet()
+    })
+
     // Load services.
     const webcams = new Webcams();
 

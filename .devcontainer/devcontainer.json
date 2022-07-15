@@ -40,6 +40,7 @@
 				"serayuzgur.crates",
 				"streetsidesoftware.code-spell-checker",
 				"mutantdino.resourcemonitor",
+				"rust-lang.rust-analyzer"
 			]
 		}
 	},
