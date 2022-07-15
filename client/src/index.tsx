@@ -4,7 +4,7 @@ import RoboticAvatarModel from "./models/robotic-avatar";
 import { Webcams } from './services/webcams';
 import React from 'react';
 
-import * as client from './wasm/';
+import * as client from '../wasm/';
 
 function main(){
     // Rust test:
