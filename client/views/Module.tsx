@@ -1,4 +1,5 @@
 import { Typography } from "@equinor/eds-core-react"
+import React from "react"
 import { ReactNode } from "react"
 import styled from "styled-components"
 

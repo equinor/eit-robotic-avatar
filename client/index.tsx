@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import RoboticAvatarView from "./views/RoboticAvatar";
 import RoboticAvatarModel from "./models/robotic-avatar";
 import { Webcams } from './services/webcams';
+import React from 'react';
 
 function main(){
     // Load services.
