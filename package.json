@@ -5,6 +5,7 @@
   "source": "client/index.html",
   "scripts": {
     "start": "parcel",
+    "wasm": "",
     "test": "jest --coverage"
   },
   "repository": {
