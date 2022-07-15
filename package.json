@@ -5,7 +5,7 @@
   "source": "client/index.html",
   "scripts": {
     "start": "parcel",
-    "wasm": "",
+    "wasm": "wasm-pack build client --out-dir wasm --target web",
     "test": "jest --coverage"
   },
   "repository": {

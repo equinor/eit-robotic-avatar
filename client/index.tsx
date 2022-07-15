@@ -4,12 +4,12 @@ import RoboticAvatarModel from "./models/robotic-avatar";
 import { Webcams } from './services/webcams';
 import React from 'react';
 
-import * as rust from '../client-rust/pkg/';
+import * as client from './wasm/';
 
 function main(){
     // Rust test:
-    rust.default().then(() => {
-        rust.greet()
+    client.default().then(() => {
+        client.greet()
     })
 
     // Load services.
