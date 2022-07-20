@@ -5,24 +5,9 @@ import { fromOffers } from "./modules/rtc";
 import { pullOffers, postAnswer } from "./modules/server";
 
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
-
-async function main() {
-    try {
-        document.getElementById("start")!.hidden = true;
-        let offers = await pullOffers();
-        console.log(offers);
-        let con = await fromOffers(offers);
-        let answer = await con.createAnswers();
-        console.log(answer);
-        await postAnswer(answer);
-        let streams = con.getStreams();
-        const cameras = new Cameras(document.getElementById("leftVideo")! as HTMLVideoElement, document.getElementById("rightVideo")! as HTMLVideoElement);
-        cameras.setStreams(streams)
-        await setup3D(cameras);
-    } catch (err) {
-        console.log(err.name + ": " + err.message);
-    }
-}
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import styled, { createGlobalStyle } from 'styled-components';
 
 async function setup3D(cameras) {
     const scene = new THREE.Scene();
@@ -73,6 +58,59 @@ async function setup3D(cameras) {
 
 }
 
-document.getElementById("VR")!.hidden = true;
-document.getElementById("start")!.onclick = main;
+const GlobalStyle = createGlobalStyle`
+    html, body, #robotic_avatar {
+        margin: 0;
+    }
+`
+
+const View = styled.canvas`
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+`
+
+const Start = styled.button`
+    position: absolute;
+    width: 200px;
+    height: 200px;
+`
+
+const HiddenVideo = styled.video`
+    display: none;
+`
+
+class RoboticAvatar extends React.Component {
+    render(): React.ReactNode {
+        return <>
+            <GlobalStyle/>
+            <View id="view"/>
+            <Start id="start" onClick={this.startHandler} >START</Start>
+            <HiddenVideo id="leftVideo" autoPlay/>
+            <HiddenVideo id="rightVideo" autoPlay/>
+        </>
+    }
+
+    startHandler = async () => {
+        try {
+            document.getElementById("start")!.hidden = true;
+            let offers = await pullOffers();
+            console.log(offers);
+            let con = await fromOffers(offers);
+            let answer = await con.createAnswers();
+            console.log(answer);
+            await postAnswer(answer);
+            let streams = con.getStreams();
+            const cameras = new Cameras(document.getElementById("leftVideo")! as HTMLVideoElement, document.getElementById("rightVideo")! as HTMLVideoElement);
+            cameras.setStreams(streams)
+            await setup3D(cameras);
+        } catch (err) {
+            console.log(err.name + ": " + err.message);
+        }
+    } 
+}
+
+
+const react_root = createRoot(document.getElementById("robotic_avatar")!);
+react_root.render(<RoboticAvatar/>);
 
