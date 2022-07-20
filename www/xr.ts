@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import Cameras from "./modules/cameras.mjs";
+import Cameras from "./modules/cameras";
 
-import { fromOffers } from "./modules/rtc.mjs";
-import { pullOffers, postAnswer } from "./modules/server.mjs";
+import { fromOffers } from "./modules/rtc";
+import { pullOffers, postAnswer } from "./modules/server";
 
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 async function main() {
     try {
-        document.getElementById("start").hidden = true;
+        document.getElementById("start")!.hidden = true;
         let offers = await pullOffers();
         console.log(offers);
         let con = await fromOffers(offers);
@@ -16,7 +16,7 @@ async function main() {
         console.log(answer);
         await postAnswer(answer);
         let streams = con.getStreams();
-        const cameras = new Cameras(document.getElementById("leftVideo"), document.getElementById("rightVideo"));
+        const cameras = new Cameras(document.getElementById("leftVideo")! as HTMLVideoElement, document.getElementById("rightVideo")! as HTMLVideoElement);
         cameras.setStreams(streams)
         await setup3D(cameras);
     } catch (err) {
@@ -30,12 +30,13 @@ async function setup3D(cameras) {
     const camera = new THREE.OrthographicCamera( -1, 1, 1, -1, -1, 1  );
 
     const renderer = new THREE.WebGLRenderer({
-        canvas: document.getElementById("view")
+        canvas: document.getElementById("view")! as HTMLCanvasElement
     });
 
     renderer.setSize(3664, 1920, false); 
     renderer.xr.enabled = true;
     renderer.xr.cameraAutoUpdate = false;
+    // @ts-ignore
     renderer.xr.getCamera = function() {
         return camera;
     }
@@ -72,6 +73,6 @@ async function setup3D(cameras) {
 
 }
 
-document.getElementById("VR").hidden = true;
-document.getElementById("start").onclick = main;
+document.getElementById("VR")!.hidden = true;
+document.getElementById("start")!.onclick = main;
 

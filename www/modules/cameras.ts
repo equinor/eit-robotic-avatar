@@ -1,13 +1,10 @@
-//@ts-check
 const leftCam = "bcde5eef8a8e23c6f8801e057d89a7fa4f93f37895b7172cc4da75defa0bece0";
 const leftHtmlId = "lefttag"
 const rightCam = "a1519691111f4b63905099ce037ac50be1f4da55e49eee61a592e741eae965d5";
 const rightHtmlId = "righttag"
 
-/**
- * @return {Promise<{left:MediaStream, right:MediaStream}>}
- */
-export async function loadCams(){
+
+export async function loadCams(): Promise<{ left: MediaStream; right: MediaStream; }>{
     const c = CamerasFromTags();
     let streams = c.loadFromUser();
 
@@ -26,11 +23,7 @@ export function loadRtc(streams){
 }
 
 export default class Cameras{
-    /**
-     * @param {HTMLVideoElement} left
-     * @param {HTMLVideoElement} right
-     */
-    constructor(left, right) {
+    constructor(public left: HTMLVideoElement, public right: HTMLVideoElement) {
         this.left = left;
         this.right = right;
     }
@@ -62,8 +55,6 @@ export default class Cameras{
         }
     }
 }
-
-// Private
 
 function CamerasFromTags() {
     return new Cameras(

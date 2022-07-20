@@ -1,10 +1,5 @@
-//@ts-check
 export class Connection {
-    /**
-     * @param {RTCPeerConnection} left
-     * @param {RTCPeerConnection} right
-     */
-    constructor(left, right) {
+    constructor(public left: RTCPeerConnection, public right: RTCPeerConnection) {
         this.left = left;
         this.right = right;
 
@@ -54,10 +49,7 @@ export class Connection {
     }
 }
 
-/**
- * @param {{ left: MediaStream, right: MediaStream, }} cams
- */
-export async function fromStreams(cams) {
+export async function fromStreams(cams: { left: MediaStream; right: MediaStream; }) {
     // no await want to happen in parallel.
     let left = fromStream(cams.left);
     let right = fromStream(cams.right);
@@ -78,7 +70,7 @@ export async function fromOffers(offers) {
 /**
  * @param {RTCPeerConnection} peer
  */
-async function createOffer(peer) {
+async function createOffer(peer: RTCPeerConnection) {
     let offer = await peer.createOffer();
     peer.setLocalDescription(offer);
     while (peer.iceGatheringState != "complete"){
@@ -90,7 +82,7 @@ async function createOffer(peer) {
 /**
  * @param {RTCPeerConnection} peer
  */
- async function createAnswer(peer) {
+ async function createAnswer(peer: RTCPeerConnection) {
     let offer = await peer.createAnswer();
     peer.setLocalDescription(offer);
     while (peer.iceGatheringState != "complete"){
@@ -102,7 +94,7 @@ async function createOffer(peer) {
 /**
  * @param {RTCPeerConnection} peer
  */
-function getStream(peer) {
+function getStream(peer: RTCPeerConnection) {
     let stream = new MediaStream();
     for (const track of peer.getReceivers()) {
         stream.addTrack(track.track)
@@ -113,7 +105,7 @@ function getStream(peer) {
 /**
  * @param {MediaStream} stream
  */
-async function fromStream(stream) {
+async function fromStream(stream: MediaStream) {
     let peer = new RTCPeerConnection();
     for (const track of stream.getTracks()) {
         peer.addTrack(track, stream);
@@ -130,7 +122,7 @@ async function fromOffer(offer) {
 /**
  * @param {RTCPeerConnection} peer
  */
-function registerEvents(peer, side) {
+function registerEvents(peer: RTCPeerConnection, side) {
     peer.onconnectionstatechange = e => {
         console.log(side, "onconnectionstatechange", peer.connectionState)
     }

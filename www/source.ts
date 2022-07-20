@@ -1,7 +1,7 @@
-//@ts-check
-import { loadCams } from "./modules/cameras.mjs";
-import { fromStreams } from "./modules/rtc.mjs";
-import { postOffers, pullAnswer } from "./modules/server.mjs";
+
+import { loadCams } from "./modules/cameras";
+import { fromStreams } from "./modules/rtc";
+import { postOffers, pullAnswer } from "./modules/server";
 
 async function main() {
     try {

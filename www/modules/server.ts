@@ -1,5 +1,3 @@
-//@ts-check
-
 export async function postOffers(offers) {
     return await postRtc("./post_offer", offers);
 }

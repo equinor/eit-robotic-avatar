@@ -5,6 +5,7 @@
   "private": true,
   "source": "www/index.html",
   "devDependencies": {
+    "@types/three": "^0.142.0",
     "parcel": "^2.6.2"
   },
   "dependencies": {
