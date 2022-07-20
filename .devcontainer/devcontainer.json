@@ -7,8 +7,7 @@
 		"args": {
 			// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
 			// Use bullseye when on local on arm64/Apple Silicon.
-			"VARIANT": "buster",
-			"NODE_VERSION": "16"
+			"VARIANT": "buster"
 		}
 	},
 	"runArgs": [
@@ -35,11 +34,9 @@
 			"extensions": [
 				"vadimcn.vscode-lldb",
 				"mutantdino.resourcemonitor",
-				"matklad.rust-analyzer",
 				"tamasfe.even-better-toml",
 				"serayuzgur.crates",
 				"streetsidesoftware.code-spell-checker",
-				"mutantdino.resourcemonitor",
 				"rust-lang.rust-analyzer"
 			]
 		}
