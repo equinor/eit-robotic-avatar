@@ -1,0 +1,71 @@
+use axum::{
+    routing::{get, get_service, post},
+    Router,
+};
+use hyper::StatusCode;
+use parking_lot::{Mutex, const_mutex};
+use tower_http::services::ServeDir;
+
+#[tokio::main]
+async fn main() {
+    // build our application with a single route
+    let app = Router::new()
+        .route("/post_offer", post(post_offer))
+        .route("/get_offer", get(get_offer))
+        .route("/post_answer", post(post_answer))
+        .route("/get_answer", get(get_answer))
+        .fallback(get_service(ServeDir::new("./www")).handle_error(
+            |error: std::io::Error| async move {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Unhandled internal error: {}", error),
+                )
+            },
+        ));
+
+    // run it with hyper on localhost:3000
+    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+}
+
+static OFFER: Mutex<String> = const_mutex(String::new());
+
+async fn post_offer(body: String) {
+    ANSWER.lock().clear();
+    let mut offer = OFFER.lock();
+    offer.clear();
+    offer.push_str(&body);
+    println!("{}", offer);
+}
+
+async fn get_offer() -> String {
+    let offer = OFFER.lock();
+    if offer.is_empty() {
+        "{}".to_string()
+    } else {
+        offer.clone()
+    }
+}
+
+static ANSWER: Mutex<String> = const_mutex(String::new());
+
+async fn post_answer(body: String) {
+    OFFER.lock().clear();
+    let mut answer = ANSWER.lock();
+    answer.clear();
+    answer.push_str(&body);
+    println!("{}", answer);
+}
+
+async fn get_answer() -> String{
+    let answer = ANSWER.lock();
+    if answer.is_empty() {
+        "{}".to_string()
+    } else {
+        answer.clone()
+    }
+}
+
+
