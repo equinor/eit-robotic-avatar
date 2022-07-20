@@ -1,0 +1,13 @@
+{
+  "name": "eit-robotic-avatar",
+  "version": "1.0.0",
+  "repository": "https://github.com/equinor/eit-robotic-avatar.git",
+  "private": true,
+  "source": "www/index.html",
+  "devDependencies": {
+    "parcel": "^2.6.2"
+  },
+  "dependencies": {
+    "three": "^0.142.0"
+  }
+}

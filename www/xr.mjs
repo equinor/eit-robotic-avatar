@@ -4,7 +4,7 @@ import Cameras from "./modules/cameras.mjs";
 import { fromOffers } from "./modules/rtc.mjs";
 import { pullOffers, postAnswer } from "./modules/server.mjs";
 
-import { VRButton } from 'https://unpkg.com/three@0.142.0/examples/jsm/webxr/VRButton.js';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 async function main() {
     try {
