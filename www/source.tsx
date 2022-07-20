@@ -4,46 +4,41 @@ import { fromStreams } from "./modules/rtc";
 import { postOffers, pullAnswer } from "./modules/server";
 import { createRoot } from 'react-dom/client';
 import styled, { createGlobalStyle } from "styled-components";
+import Viewport from "./view/Viewport";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
         margin: 0;
+        height: 100%;
     }
 `
 
-const LeftVideo = styled.video`
-    position: absolute;
-    transform: rotate(270deg);
-    transform-origin: top left;
-    width: 100vh;
-    height: 50vw;
-    margin-top: 100vh;
-    object-fit: cover;
+const View = styled(Viewport)`
+    height: 100%;
 `
 
-const RightVideo = styled.video`
-    position: absolute;
-    transform: rotate(90deg);
-    transform-origin: bottom left;
-    width: 100vh;
-    height: 50vw;
-    margin-top: -50vw;
-    margin-left: 50vw;
-    object-fit: cover;
-`
+interface State {
+    left?: MediaStream,
+    right?: MediaStream,
+}
 
-class RoboticAvatar extends React.Component {
+class RoboticAvatar extends React.Component<{}, State> {
+    constructor(props){
+        super(props);       
+        this.state = {}
+    }
+
     render(): React.ReactNode {
         return <>
             <GlobalStyle/>
-            <LeftVideo autoPlay id="lefttag"/>
-            <RightVideo autoPlay id="righttag"/>
+            <View left={this.state.left} right={this.state.right}/>
         </>
     }
 
     componentDidMount() {
         const inner = async () => {
             let cams = await loadCams();
+            this.setState(cams);
             let con = await fromStreams(cams);
             let offers = await con.createOffers();
             console.log(offers);
