@@ -1,7 +1,7 @@
 //@ts-check
-const leftCam = "f0914100f10755b1b9414d0b890e88ca9e14caec37cbe17380b782254f87d162";
+const leftCam = "bcde5eef8a8e23c6f8801e057d89a7fa4f93f37895b7172cc4da75defa0bece0";
 const leftHtmlId = "lefttag"
-const rightCam = "2c2de863e9ae1abcc37d6cdecf5cdbfbd27b5d7ef916b7545ffef22cf72c8efa";
+const rightCam = "a1519691111f4b63905099ce037ac50be1f4da55e49eee61a592e741eae965d5";
 const rightHtmlId = "righttag"
 
 /**
