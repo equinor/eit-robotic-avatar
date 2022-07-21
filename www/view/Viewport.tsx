@@ -34,6 +34,9 @@ export default class Viewport extends React.Component<Props> {
     }
 
     componentDidMount() {
+        // Based on the assumption both Oculkust Quest 2 and Webcam have a diagonal feald of view of 90. But a diffrent 
+        let fov = 0.830097;
+
         this.componentDidUpdate();
         const scene = new THREE.Scene();
 
@@ -46,7 +49,7 @@ export default class Viewport extends React.Component<Props> {
         renderer.setSize(3664, 1920, false); 
         renderer.xr.enabled = true;
         renderer.xr.cameraAutoUpdate = false;
-        // @ts-ignore
+        // @ts-ignore|
         renderer.xr.getCamera = function() {
             return camera;
         }
@@ -56,7 +59,7 @@ export default class Viewport extends React.Component<Props> {
         textureLeft.rotation = 90  * (Math.PI/180);
     
         const left = new THREE.Mesh(
-            new THREE.PlaneGeometry( 0.58952, 2 ),
+            new THREE.PlaneGeometry( 0.58952* fov, 2 * fov),
             new THREE.MeshBasicMaterial( { map: textureLeft } )
         );
         left.position.x = -0.5;
@@ -66,7 +69,7 @@ export default class Viewport extends React.Component<Props> {
         textureRight.center = new THREE.Vector2( 0.5, 0.5 )
         textureRight.rotation = 90 * 3 * (Math.PI/180);
         const right = new THREE.Mesh(
-            new THREE.PlaneGeometry( 0.58952, 2 ),
+            new THREE.PlaneGeometry( 0.58952 * fov, 2 * fov),
             new THREE.MeshBasicMaterial( { map: textureRight } )
         );
         right.position.x = 0.5;
