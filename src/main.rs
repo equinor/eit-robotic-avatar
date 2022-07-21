@@ -14,7 +14,7 @@ async fn main() {
         .route("/get_offer", get(get_offer))
         .route("/post_answer", post(post_answer))
         .route("/get_answer", get(get_answer))
-        .fallback(get_service(ServeDir::new("./www")).handle_error(
+        .fallback(get_service(ServeDir::new("./dist")).handle_error(
             |error: std::io::Error| async move {
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,

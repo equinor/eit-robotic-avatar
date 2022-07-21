@@ -1,0 +1,21 @@
+{
+  "name": "eit-robotic-avatar",
+  "version": "1.0.0",
+  "repository": "https://github.com/equinor/eit-robotic-avatar.git",
+  "private": true,
+  "source": "www/index.html",
+  "devDependencies": {
+    "@types/react": "^18.0.15",
+    "@types/react-dom": "^18.0.6",
+    "@types/styled-components": "^5.1.25",
+    "@types/three": "^0.142.0",
+    "parcel": "^2.6.2",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^5.3.5",
+    "three": "^0.142.0"
+  }
+}
