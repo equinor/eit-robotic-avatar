@@ -34,7 +34,7 @@ export default class Viewport extends React.Component<Props> {
     }
 
     componentDidMount() {
-        // Based on the assumption both Oculkust Quest 2 and Webcam have a diagonal feald of view of 90. But a diffrent 
+        // Based on the assumption both Oculus Quest 2 and Webcam have a diagonal field of view of 90. But a different aspect ratio.
         let fov = 0.830097;
 
         this.componentDidUpdate();
