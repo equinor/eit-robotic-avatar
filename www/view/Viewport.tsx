@@ -49,7 +49,7 @@ export default class Viewport extends React.Component<Props> {
         renderer.setSize(3664, 1920, false); 
         renderer.xr.enabled = true;
         renderer.xr.cameraAutoUpdate = false;
-        // @ts-ignore|
+        // @ts-ignore
         renderer.xr.getCamera = function() {
             return camera;
         }
