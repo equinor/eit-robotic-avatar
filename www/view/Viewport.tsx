@@ -34,6 +34,9 @@ export default class Viewport extends React.Component<Props> {
     }
 
     componentDidMount() {
+        // Based on the assumption both Oculus Quest 2 and Webcam have a diagonal field of view of 90. But a different aspect ratio.
+        let fov = 0.830097;
+
         this.componentDidUpdate();
         const scene = new THREE.Scene();
 
@@ -56,7 +59,7 @@ export default class Viewport extends React.Component<Props> {
         textureLeft.rotation = 90  * (Math.PI/180);
     
         const left = new THREE.Mesh(
-            new THREE.PlaneGeometry( 1, 2 ),
+            new THREE.PlaneGeometry( 0.58952* fov, 2 * fov),
             new THREE.MeshBasicMaterial( { map: textureLeft } )
         );
         left.position.x = -0.5;
@@ -66,7 +69,7 @@ export default class Viewport extends React.Component<Props> {
         textureRight.center = new THREE.Vector2( 0.5, 0.5 )
         textureRight.rotation = 90 * 3 * (Math.PI/180);
         const right = new THREE.Mesh(
-            new THREE.PlaneGeometry( 1, 2 ),
+            new THREE.PlaneGeometry( 0.58952 * fov, 2 * fov),
             new THREE.MeshBasicMaterial( { map: textureRight } )
         );
         right.position.x = 0.5;

@@ -1,5 +1,5 @@
-const leftCam = "bcde5eef8a8e23c6f8801e057d89a7fa4f93f37895b7172cc4da75defa0bece0";
-const rightCam = "a1519691111f4b63905099ce037ac50be1f4da55e49eee61a592e741eae965d5";
+const leftCam = "171576bfc26c9ce37f0881de5c44ef2dc7d7b82d92a4e382f1d7b94957573e6f";
+const rightCam = "c13e97362e3e5bc794c2f8d176fb475da32f32f27c7e09fdc2d9565187511b04";
 
 export async function loadCams(leftId = leftCam, rightId = rightCam): Promise<{ left: MediaStream; right: MediaStream; }>{
     // log list of devices to console.
