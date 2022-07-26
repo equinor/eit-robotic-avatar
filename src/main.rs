@@ -2,8 +2,10 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
+use axum_server::tls_rustls::RustlsConfig;
 use hyper::StatusCode;
 use parking_lot::{Mutex, const_mutex};
+use rcgen::generate_simple_self_signed;
 use tower_http::services::ServeDir;
 
 #[tokio::main]
@@ -23,8 +25,13 @@ async fn main() {
             },
         ));
 
+    let subject_alt_names:&[_] = &["127.0.0.1".to_string(),
+	"10.52.120.59".to_string()];
+    let cert = generate_simple_self_signed(subject_alt_names).unwrap();
+    let config = RustlsConfig::from_der(vec![cert.serialize_der().unwrap()], cert.serialize_private_key_der()).await.unwrap();
+
     // run it with hyper on localhost:3000
-    axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
+    axum_server::bind_rustls("0.0.0.0:3000".parse().unwrap(), config)
         .serve(app.into_make_service())
         .await
         .unwrap();
