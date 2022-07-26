@@ -59,7 +59,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
                     <button disabled={this.state.started} onClick={this.handleReceiver}>Start as receiver</button> 
                 </p>
             </Ui>
-            if (this.state.left !== undefined) {
+            if (!this.state.left) {
                <View left={this.state.left} right={this.state.right}/> 
             }
         </Grid>
