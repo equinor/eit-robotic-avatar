@@ -44,7 +44,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
     constructor(props){
         super(props);       
         this.state = {
-            started: false
+            started: false,
         }
     }
 
@@ -55,10 +55,13 @@ export class RoboticAvatar extends React.Component<{}, State> {
                 <h1>Robotic Avatar Level 1 demo</h1>
                 <p>
                     <button disabled={this.state.started} onClick={this.handleSource}>Start as source</button>
+                    <button disabled={this.state.started} onClick={this.handleSourceNoView}>Start as source NO VIEWPORT</button>
                     <button disabled={this.state.started} onClick={this.handleReceiver}>Start as receiver</button> 
                 </p>
             </Ui>
-            <View left={this.state.left} right={this.state.right}/>
+            if (!this.state.left) {
+               <View left={this.state.left} right={this.state.right}/> 
+            }
         </Grid>
     }
 
@@ -78,6 +81,25 @@ export class RoboticAvatar extends React.Component<{}, State> {
             console.error(err)
         }
     }
+
+    handleSourceNoView = async () => {
+        try{
+            this.setState({started: true});
+            let cams = await loadCams();
+            // this.setState(cams);
+            let con = await fromStreams(cams);
+            let offers = await con.createOffers();
+            console.log(offers);
+            await postOffers(offers);
+            let answer = await pullAnswer();
+            console.log(answer);
+            await con.setAnswers(answer);
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    
 
     handleReceiver = async () => {
         try {
