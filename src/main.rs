@@ -1,3 +1,5 @@
+use std::{net::SocketAddr, sync::Arc};
+
 use axum::{
     routing::{get, get_service, post},
     Router,
@@ -6,16 +8,26 @@ use axum_server::tls_rustls::RustlsConfig;
 use hyper::StatusCode;
 use parking_lot::{Mutex, const_mutex};
 use rcgen::generate_simple_self_signed;
+use tokio::net::UdpSocket;
 use tower_http::services::ServeDir;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Setup udp 
+    let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
+    let remote_addr = "10.52.118.113:6666".parse::<SocketAddr>().unwrap();
+    sock.connect(remote_addr).await?;
+
     // build our application with a single route
     let app = Router::new()
         .route("/post_offer", post(post_offer))
         .route("/get_offer", get(get_offer))
         .route("/post_answer", post(post_answer))
         .route("/get_answer", get(get_answer))
+        .route("/post_tracking", post({
+            let sock = Arc::clone(&sock);
+            move |body| post_tracking(body, Arc::clone(&sock))
+        }))
         .fallback(get_service(ServeDir::new("./dist")).handle_error(
             |error: std::io::Error| async move {
                 (
@@ -26,7 +38,7 @@ async fn main() {
         ));
 
     let subject_alt_names:&[_] = &["127.0.0.1".to_string(),
-	"10.52.120.59".to_string()];
+	"10.52.120.59".to_string(), "10.52.115.15".to_string()];
     let cert = generate_simple_self_signed(subject_alt_names).unwrap();
     let config = RustlsConfig::from_der(vec![cert.serialize_der().unwrap()], cert.serialize_private_key_der()).await.unwrap();
 
@@ -35,6 +47,7 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+    Ok(())
 }
 
 static OFFER: Mutex<String> = const_mutex(String::new());
@@ -44,7 +57,6 @@ async fn post_offer(body: String) {
     let mut offer = OFFER.lock();
     offer.clear();
     offer.push_str(&body);
-    println!("{}", offer);
 }
 
 async fn get_offer() -> String {
@@ -63,7 +75,6 @@ async fn post_answer(body: String) {
     let mut answer = ANSWER.lock();
     answer.clear();
     answer.push_str(&body);
-    println!("{}", answer);
 }
 
 async fn get_answer() -> String{
@@ -73,6 +84,11 @@ async fn get_answer() -> String{
     } else {
         answer.clone()
     }
+}
+
+async fn post_tracking(body: String, sock: Arc<UdpSocket>){
+    sock.send(body.as_bytes()).await.unwrap();
+    //println!("{}", body)
 }
 
 

@@ -1,3 +1,5 @@
+import { Tracking } from "../view/Viewport";
+
 export async function postOffers(offers) {
     return await postRtc("./post_offer", offers);
 }
@@ -14,6 +16,10 @@ export async function postAnswer(answer) {
 // pull and server until we get something looks like an answer.
 export async function pullAnswer() {
     return await pullRtc("./get_answer");
+}
+
+export async function postTracking(tracking: Tracking) {
+    return await postRtc("./post_tracking", tracking);
 }
 
 /* ---- Private stuff --- */
