@@ -106,10 +106,10 @@ export default class Viewport extends React.Component<Props> {
                 }
 
                 xrframe.session.inputSources.forEach(function(input) {
-                    if (input.handedness ===  "left") {
-                        track.l = toController(input.gamepad!);
-                    } else if (input.handedness === "right") {
-                        track.r = toController(input.gamepad!);
+                    if (input.handedness ===  "left" && input.gamepad) {
+                        track.l = toController(input.gamepad);
+                    } else if (input.handedness === "right" && input.gamepad) {
+                        track.r = toController(input.gamepad);
                     }
                 });
 
@@ -130,11 +130,11 @@ export default class Viewport extends React.Component<Props> {
 function toController(game: Gamepad): Controller {
     //I am just guessing
     return {
-        x: game.axes[0],
-        y: game.axes[1],
-        a: game.buttons[0].pressed,
-        b: game.buttons[1].pressed,
-        c: game.buttons[2].value,
-        d: game.buttons[3].value,
+        x: game.axes[2] ?? 0,
+        y: game.axes[3] ?? 0,
+        a: game.buttons[4]?.pressed ?? false,
+        b: game.buttons[5]?.pressed ?? false,
+        c: game.buttons[0]?.value ?? 0,
+        d: game.buttons[1]?.value ?? 0,
     }
 }
