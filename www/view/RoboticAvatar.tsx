@@ -1,9 +1,9 @@
 import React from "react";
 import { loadCams } from "../modules/cameras";
 import { fromOffers, fromStreams } from "../modules/rtc";
-import { postAnswer, postOffers, pullAnswer, pullOffers } from "../modules/server";
+import { postAnswer, postOffers, postTracking, pullAnswer, pullOffers } from "../modules/server";
 import styled, { createGlobalStyle } from "styled-components";
-import Viewport from "../view/Viewport";
+import Viewport, { Tracking } from "../view/Viewport";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
@@ -41,6 +41,8 @@ interface State {
 }
 
 export class RoboticAvatar extends React.Component<{}, State> {
+    private sending = false;
+
     constructor(props){
         super(props);       
         this.state = {
@@ -59,7 +61,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
                     <button disabled={this.state.started} onClick={this.handleReceiver}>Start as receiver</button> 
                 </p>
             </Ui>
-            <View left={this.state.left} right={this.state.right} onTrack={console.log}/> 
+            <View left={this.state.left} right={this.state.right} onTrack={this.handleTracking}/> 
         </Grid>
     }
 
@@ -97,8 +99,6 @@ export class RoboticAvatar extends React.Component<{}, State> {
         }
     }
 
-    
-
     handleReceiver = async () => {
         try {
             this.setState({started: true});
@@ -110,6 +110,17 @@ export class RoboticAvatar extends React.Component<{}, State> {
             await postAnswer(answer);
             let streams = con.getStreams();
             this.setState(streams);
+        } catch (err) {
+            console.log(err);
+        }
+    } 
+
+    handleTracking = async (track: Tracking) => {
+        try {
+            if(this.sending) return;
+            this.sending = true;
+            await postTracking(track);
+            this.sending = false;
         } catch (err) {
             console.log(err);
         }

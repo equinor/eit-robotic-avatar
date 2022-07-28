@@ -21,7 +21,7 @@ interface Props {
     onTrack?: (track: Tracking) => void,
 }
 
-interface Tracking {
+export interface Tracking {
     rx: number,
     ry: number,
     rz: number,
@@ -29,7 +29,7 @@ interface Tracking {
     r: Controller,
 }
 
-interface Controller {
+export interface Controller {
     x: number, // Thumb Sticks X
     y: number, // Thumb Sticks X
     a: boolean, // A or X button

@@ -16,6 +16,7 @@ async fn main() {
         .route("/get_offer", get(get_offer))
         .route("/post_answer", post(post_answer))
         .route("/get_answer", get(get_answer))
+        .route("/post_tracking", post(post_tracking))
         .fallback(get_service(ServeDir::new("./dist")).handle_error(
             |error: std::io::Error| async move {
                 (
@@ -26,7 +27,7 @@ async fn main() {
         ));
 
     let subject_alt_names:&[_] = &["127.0.0.1".to_string(),
-	"10.52.120.59".to_string()];
+	"10.52.120.59".to_string(), "10.52.115.15".to_string()];
     let cert = generate_simple_self_signed(subject_alt_names).unwrap();
     let config = RustlsConfig::from_der(vec![cert.serialize_der().unwrap()], cert.serialize_private_key_der()).await.unwrap();
 
@@ -44,7 +45,6 @@ async fn post_offer(body: String) {
     let mut offer = OFFER.lock();
     offer.clear();
     offer.push_str(&body);
-    println!("{}", offer);
 }
 
 async fn get_offer() -> String {
@@ -63,7 +63,6 @@ async fn post_answer(body: String) {
     let mut answer = ANSWER.lock();
     answer.clear();
     answer.push_str(&body);
-    println!("{}", answer);
 }
 
 async fn get_answer() -> String{
@@ -75,4 +74,6 @@ async fn get_answer() -> String{
     }
 }
 
-
+async fn post_tracking(body: String){
+    println!("{}", body)
+}
