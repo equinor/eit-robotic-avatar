@@ -18,6 +18,24 @@ interface Props {
     className?: string,
     left?: MediaStream,
     right?: MediaStream,
+    onTrack?: (track: Tracking) => void,
+}
+
+interface Tracking {
+    rx: number,
+    ry: number,
+    rz: number,
+    l: Controller,
+    r: Controller,
+}
+
+interface Controller {
+    x: number, // Thumb Sticks X
+    y: number, // Thumb Sticks X
+    a: boolean, // A or X button
+    b: boolean, // B or Y button
+    c: number, // Trigger
+    d: number, // Grip
 }
 
 export default class Viewport extends React.Component<Props> {
@@ -76,7 +94,27 @@ export default class Viewport extends React.Component<Props> {
         scene.add( right );
       
     
-        renderer.setAnimationLoop( function () {
+        renderer.setAnimationLoop( (_, xrframe) => {
+            if(renderer.xr.isPresenting && this.props.onTrack) {
+                const r = xrframe.getViewerPose(renderer.xr.getReferenceSpace()!)!.transform.orientation;
+                let track = {
+                    rx: r.x,
+                    ry: r.y,
+                    rz: r.z,
+                    l: {x: 0,y: 0, a: false,b: false,c: 0,d: 0},
+                    r: {x: 0,y: 0, a: false,b: false,c: 0,d: 0},
+                }
+
+                xrframe.session.inputSources.forEach(function(input) {
+                    if (input.handedness ===  "left") {
+                        track.l = toController(input.gamepad!);
+                    } else if (input.handedness === "right") {
+                        track.r = toController(input.gamepad!);
+                    }
+                });
+
+                this.props.onTrack(track);
+            }
             renderer.render( scene, camera );
         } );
     
@@ -86,5 +124,17 @@ export default class Viewport extends React.Component<Props> {
     componentDidUpdate() {
         this.left.current!.srcObject = this.props.left ?? null;
         this.right.current!.srcObject = this.props.right ?? null;
+    }
+}
+
+function toController(game: Gamepad): Controller {
+    //I am just guessing
+    return {
+        x: game.axes[0],
+        y: game.axes[1],
+        a: game.buttons[0].pressed,
+        b: game.buttons[1].pressed,
+        c: game.buttons[2].value,
+        d: game.buttons[3].value,
     }
 }
