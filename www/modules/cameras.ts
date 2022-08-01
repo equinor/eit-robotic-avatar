@@ -16,3 +16,10 @@ export async function loadCams(leftId: string, rightId: string): Promise<{ left:
 
     return streams;
 }
+
+
+export async function listDevices(): Promise<[string, string][]> {
+    let devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter( device => device.kind === "videoinput")
+        .map(device => [device.label, device.deviceId]);
+}

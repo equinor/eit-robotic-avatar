@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from "react";
-import { loadCams } from "../modules/cameras";
+import { listDevices, loadCams } from "../modules/cameras";
 import { fromOffers, fromStreams } from "../modules/rtc";
 import { postAnswer, postOffers, postTracking, pullAnswer, pullOffers } from "../modules/server";
 import styled, { createGlobalStyle } from "styled-components";
@@ -40,6 +40,7 @@ interface State {
     started: boolean,
     leftCamId: string,
     rightCamId: string,
+    devices: [string,string][]
 }
 
 const LeftCameraId = "LeftCameraId";
@@ -58,10 +59,15 @@ export class RoboticAvatar extends React.Component<{}, State> {
             started: false,
             leftCamId: left,
             rightCamId: right,
+            devices: []
         }
+
+        listDevices().then(devices => this.setState({devices: devices}))
     }
 
     render(): React.ReactNode {
+        const devices = this.state.devices.map(device => <li>{device[0]}: {device[1]}</li>)
+
         return <Grid>
             <GlobalStyle/>
             <Ui>
@@ -69,6 +75,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
                 <p>
                     Left Camera ID: <input size={64} value={this.state.leftCamId} onChange={this.handleLeftCam} /><br/>
                     Right Camera ID <input size={64} value={this.state.rightCamId} onChange={this.handleRightCam} />
+                    <ul>{devices}</ul>
                 </p>
                 <p>
                     <button disabled={this.state.started} onClick={this.handleSource}>Start as source</button>
@@ -97,6 +104,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
             this.setState({started: true});
             let cams = await loadCams(this.state.leftCamId, this.state.rightCamId);
             this.setState(cams);
+            this.setState({devices: await listDevices()});
             let con = await fromStreams(cams);
             let offers = await con.createOffers();
             console.log(offers);
@@ -114,6 +122,7 @@ export class RoboticAvatar extends React.Component<{}, State> {
             this.setState({started: true});
             let cams = await loadCams(this.state.leftCamId, this.state.rightCamId);
             // this.setState(cams);
+            this.setState({devices: await listDevices()});
             let con = await fromStreams(cams);
             let offers = await con.createOffers();
             console.log(offers);
