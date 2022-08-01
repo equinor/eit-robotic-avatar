@@ -1,5 +1,5 @@
-import React from "react";
-import { loadCams } from "../modules/cameras";
+import React, { ChangeEvent } from "react";
+import { listDevices, loadCams } from "../modules/cameras";
 import { fromOffers, fromStreams } from "../modules/rtc";
 import { postAnswer, postOffers, postTracking, pullAnswer, pullOffers } from "../modules/server";
 import styled, { createGlobalStyle } from "styled-components";
@@ -38,23 +38,45 @@ interface State {
     left?: MediaStream,
     right?: MediaStream,
     started: boolean,
+    leftCamId: string,
+    rightCamId: string,
+    devices: [string,string][]
 }
+
+const LeftCameraId = "LeftCameraId";
+const RightCameraId = "RightCameraId";
 
 export class RoboticAvatar extends React.Component<{}, State> {
     private sending = false;
 
     constructor(props){
-        super(props);       
+        super(props);
+
+        const left = localStorage.getItem(LeftCameraId) ?? "";
+        const right = localStorage.getItem(RightCameraId) ?? "";
+        
         this.state = {
             started: false,
+            leftCamId: left,
+            rightCamId: right,
+            devices: []
         }
+
+        listDevices().then(devices => this.setState({devices: devices}))
     }
 
     render(): React.ReactNode {
+        const devices = this.state.devices.map(device => <li>{device[0]}: {device[1]}</li>)
+
         return <Grid>
             <GlobalStyle/>
             <Ui>
-                <h1>Robotic Avatar Level 1 demo</h1>
+                <h1>Robotic Avatar Demo</h1>
+                <p>
+                    Left Camera ID: <input size={64} value={this.state.leftCamId} onChange={this.handleLeftCam} /><br/>
+                    Right Camera ID <input size={64} value={this.state.rightCamId} onChange={this.handleRightCam} />
+                    <ul>{devices}</ul>
+                </p>
                 <p>
                     <button disabled={this.state.started} onClick={this.handleSource}>Start as source</button>
                     <button disabled={this.state.started} onClick={this.handleSourceNoView}>Start as source NO VIEWPORT</button>
@@ -65,11 +87,24 @@ export class RoboticAvatar extends React.Component<{}, State> {
         </Grid>
     }
 
+    handleLeftCam = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        localStorage.setItem(LeftCameraId, value);
+        this.setState({leftCamId: value});    
+    }
+
+    handleRightCam = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        localStorage.setItem(RightCameraId, value);
+        this.setState({rightCamId: value});    
+    }
+
     handleSource = async () => {
         try{
             this.setState({started: true});
-            let cams = await loadCams();
+            let cams = await loadCams(this.state.leftCamId, this.state.rightCamId);
             this.setState(cams);
+            this.setState({devices: await listDevices()});
             let con = await fromStreams(cams);
             let offers = await con.createOffers();
             console.log(offers);
@@ -85,8 +120,9 @@ export class RoboticAvatar extends React.Component<{}, State> {
     handleSourceNoView = async () => {
         try{
             this.setState({started: true});
-            let cams = await loadCams();
+            let cams = await loadCams(this.state.leftCamId, this.state.rightCamId);
             // this.setState(cams);
+            this.setState({devices: await listDevices()});
             let con = await fromStreams(cams);
             let offers = await con.createOffers();
             console.log(offers);
