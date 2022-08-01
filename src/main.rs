@@ -6,6 +6,7 @@ use axum::{
 };
 use axum_server::tls_rustls::RustlsConfig;
 use hyper::{StatusCode, Uri, header};
+use network_interface::{NetworkInterface, NetworkInterfaceConfig, Addr};
 use parking_lot::{const_mutex, Mutex};
 use rcgen::generate_simple_self_signed;
 use rust_embed::RustEmbed;
@@ -15,7 +16,7 @@ use tokio::net::UdpSocket;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup udp
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
-    let remote_addr = "10.52.118.113:6666".parse::<SocketAddr>().unwrap();
+    let remote_addr = "127.0.0.1:6666".parse::<SocketAddr>().unwrap();
     sock.connect(remote_addr).await?;
 
     // build our application with a single route
@@ -34,11 +35,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .fallback(get(static_handler));
 
-    let subject_alt_names: &[_] = &[
-        "127.0.0.1".to_string(),
-        "10.52.120.59".to_string(),
-        "10.52.115.15".to_string(),
-    ];
+    let network_interfaces = NetworkInterface::show().unwrap();
+    let subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
+        match n.addr? {
+            Addr::V4(addr) => Some(addr.ip.to_string()),
+            Addr::V6(_) =>None
+        }
+    }).collect();
+
+    println!("Creating cert for: {}", subject_alt_names.join(" "));
+
     let cert = generate_simple_self_signed(subject_alt_names).unwrap();
     let config = RustlsConfig::from_der(
         vec![cert.serialize_der().unwrap()],
@@ -47,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await
     .unwrap();
 
-    // run it with hyper on localhost:3000
+    println!("Stating server on 0.0.0.0:3000. https://127.0.0.1:3000/");
     axum_server::bind_rustls("0.0.0.0:3000".parse().unwrap(), config)
         .serve(app.into_make_service())
         .await
