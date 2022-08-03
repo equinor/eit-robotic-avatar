@@ -1,4 +1,4 @@
-# eit-minion
+# Robot Setup
 A ROS 2 robot platform for use in testing.
 ## Run-Book from scratch:
 1. Flash new SD card with Ubuntu 20.04
