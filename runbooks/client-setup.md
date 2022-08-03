@@ -11,10 +11,16 @@ The robot avatar client software have 3 parts:
 1. Assume you already have pi running ubuntu 20.04.
 
 ### Install requirements (Untested)
-1. Install git.
 1. Install node 16.
+    1. `curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -`
+    1. `sudo apt-get install -y nodejs`
 1. Install yarn.
-1. Install Rust.
+    1. `curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null`
+    1. `echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list`
+    1. `sudo apt-get update && sudo apt-get install yarn`
+1. Install Rust. `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+    1. `source "$HOME/.cargo/env"`
+
 
 ### Get repo (untested)
 1. clone repo: `git clone https://github.com/equinor/eit-robotic-avatar.git`

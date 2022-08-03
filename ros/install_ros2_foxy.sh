@@ -27,7 +27,7 @@ sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key  -
 sudo sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null'
 
 echo "[Install ROS 2 packages]"
-sudo apt update && sudo apt install -y ros-$name_ros_version-base
+sudo apt update && sudo apt install -y ros-$name_ros_version-ros-base
 
 echo "[Environment setup]"
 source /opt/ros/$name_ros_version/setup.sh

@@ -16,7 +16,7 @@ use tokio::net::UdpSocket;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup udp
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
-    let remote_addr = "127.0.0.1:6666".parse::<SocketAddr>().unwrap();
+    let remote_addr = "10.52.118.146:6666".parse::<SocketAddr>().unwrap();
     sock.connect(remote_addr).await?;
 
     // build our application with a single route
@@ -36,12 +36,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .fallback(get(static_handler));
 
     let network_interfaces = NetworkInterface::show().unwrap();
-    let subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
+    let mut subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
         match n.addr? {
             Addr::V4(addr) => Some(addr.ip.to_string()),
             Addr::V6(_) =>None
         }
     }).collect();
+    subject_alt_names.push("10.52.115.15".to_string());
 
     println!("Creating cert for: {}", subject_alt_names.join(" "));
 
