@@ -2,5 +2,5 @@
 
 ## [Client software](./client-setup.md)
 
-## Robot
+## [Robot](./robot-setup.md)
 
