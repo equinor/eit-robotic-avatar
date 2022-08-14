@@ -105,8 +105,8 @@ class MyClient(Node):
 
 
 def main():
-    HOST = "127.0.0.1"
-    PORT = 6666  
+    HOST = "0.0.0.0"
+    PORT = 6666
 
     rclpy.init()
     my_client = MyClient()

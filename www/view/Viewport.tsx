@@ -74,7 +74,7 @@ export default class Viewport extends React.Component<Props> {
     
         const textureLeft = new THREE.VideoTexture( this.left.current! );
         textureLeft.center = new THREE.Vector2( 0.5, 0.5 )
-        textureLeft.rotation = 90  * (Math.PI/180);
+        textureLeft.rotation = 90 * 3 * (Math.PI/180);
     
         const left = new THREE.Mesh(
             new THREE.PlaneGeometry( 0.58952* fov, 2 * fov),
@@ -85,7 +85,7 @@ export default class Viewport extends React.Component<Props> {
     
         const textureRight= new THREE.VideoTexture( this.right.current! );
         textureRight.center = new THREE.Vector2( 0.5, 0.5 )
-        textureRight.rotation = 90 * 3 * (Math.PI/180);
+        textureRight.rotation = 90 * 1 * (Math.PI/180);
         const right = new THREE.Mesh(
             new THREE.PlaneGeometry( 0.58952 * fov, 2 * fov),
             new THREE.MeshBasicMaterial( { map: textureRight } )
