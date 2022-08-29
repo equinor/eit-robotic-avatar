@@ -20,10 +20,6 @@ def map(value, outputMin, outputMax, inputMin = -0.5, inputMax = 0.5):
 def clamp(num, min_value, max_value):
    return max(min(num, max_value), min_value)
 
-def load_new_data(data):
-    trackingData = json.loads(data)
-    return trackingData
-
 class Motors():
     def __init__(self):
         self.front_left = Motor(forward=20, backward=16)
@@ -37,31 +33,37 @@ class Motors():
 
         self.back_right = Motor(forward=17, backward=27)
         self.back_right_enable = OutputDevice(22)
-    
 
-    def drive(self, a, b):
-        w = (1-abs(a))*(b) + b
-        v = (1-abs(b))*(a) + a
-
-        self.front_left.value = -(v-w)/2
+    def tank_drive(self, l , r):
+        self.front_left.value = l
         self.front_left_enable.on()
 
-        self.front_right.value = -(v+w)/2
+        self.front_right.value = r
         self.front_right_enable.on()
 
-        self.back_left.value = -(v-w)/2
+        self.back_left.value = l
         self.back_left_enable.on()
             
-        self.back_right.value = -(v+w)/2
+        self.back_right.value = r
         self.back_right_enable.on()
 
+def proses_motor(data): 
+    leftController = data['l']
+    y = leftController['y']
+    x = leftController['x']
+
+    w = (1-abs(y))*(x) + x
+    v = (1-abs(x))*(y) + y
+
+    left = -(v-w)/2
+    right = -(v+w)/2
+
+    return (left, right)
 
 
 class MyClient(Node):
     def __init__(self):
         super().__init__('my_client')
-        self.data = None
-        self.motors = Motors()
         
         # Create Service Clients
         self.cli_joint = self.create_client(SetJointPosition, 'goal_joint_space_path')
@@ -73,15 +75,11 @@ class MyClient(Node):
 
 
 
-    def send_request(self):
+    def send_request(self, data):
         # Translate data to radians
-        rx = map(clamp(self.data['rx'], -0.5, 0.5), outputMin=1.57, outputMax=-1.57) 
-        ry = map(clamp(self.data['ry'], -0.5, 0.5), outputMin=-1.57, outputMax=1.57)
-        rz = map(clamp(self.data['rz'], -0.25, 0.25), outputMin=-0.01, outputMax=0.01)
-        leftController = self.data['l']
-        rightController = self.data['r']
-        a = leftController['y']
-        b = leftController['x']
+        rx = map(clamp(data['rx'], -0.5, 0.5), outputMin=1.57, outputMax=-1.57) 
+        ry = map(clamp(data['ry'], -0.5, 0.5), outputMin=-1.57, outputMax=1.57)
+        rz = map(clamp(data['rz'], -0.25, 0.25), outputMin=-0.01, outputMax=0.01)
 
         # # Set joint states
         self.req.joint_position.joint_name = ['joint1', 'joint2', 'joint3', 'joint4']
@@ -98,15 +96,14 @@ class MyClient(Node):
         rclpy.spin_until_future_complete(self, self.future_tool)
         self.future = self.cli_joint.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
-        
-        self.motors.drive(a,b)  
 
         return self.future.result()
 
-
 def main():
-    HOST = "127.0.0.1"
-    PORT = 6666  
+    HOST = "0.0.0.0"
+    PORT = 6666 
+
+    motors = Motors()
 
     rclpy.init()
     my_client = MyClient()
@@ -116,8 +113,10 @@ def main():
 
     while(rclpy.ok()):
         data, addr = s.recvfrom(512)
-        my_client.data = load_new_data(data)
-        response = my_client.send_request()
+        data = json.loads(data)
+        (l,r) = proses_motor(data)
+        motors.tank_drive(l,r)
+        response = my_client.send_request(data)
     my_client.destroy_node()
     rclpy.shutdown()
 
