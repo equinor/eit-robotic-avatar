@@ -16,7 +16,7 @@ use tokio::net::UdpSocket;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Setup udp
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
-    let remote_addr = "10.52.118.132:6666".parse::<SocketAddr>().unwrap();
+    let remote_addr = "10.52.119.211:6666".parse::<SocketAddr>().unwrap();
     sock.connect(remote_addr).await?;
 
     // build our application with a single route

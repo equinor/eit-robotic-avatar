@@ -99,26 +99,45 @@ class MyClient(Node):
 
         return self.future.result()
 
-def main():
-    HOST = "0.0.0.0"
-    PORT = 6666 
+def drive_start():
+    pass
 
+def drive_run(drive, data):
+    pass
+
+def network_start():
+    HOST = "0.0.0.0"
+    PORT = 6666
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind((HOST, PORT))
+    return s
+
+def network_get(network):
+    payload, _ = network.recvfrom(512)
+    return json.loads(payload)
+
+def arm_start():
+    pass
+
+def arm_run(arm, data):
+    pass
+
+def main():
     motors = Motors()
 
     rclpy.init()
     my_client = MyClient()
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((HOST, PORT))
+    network = network_start();
 
-    while(rclpy.ok()):
-        data, addr = s.recvfrom(512)
-        data = json.loads(data)
+    # rclpy.ok()
+    while(True):
+        data = network_get(network);
         (l,r) = proses_motor(data)
         motors.tank_drive(l,r)
         response = my_client.send_request(data)
-    my_client.destroy_node()
-    rclpy.shutdown()
+    #my_client.destroy_node()
+    #rclpy.shutdown()
 
 
 if __name__ == '__main__':
