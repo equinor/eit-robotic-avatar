@@ -100,10 +100,11 @@ class MyClient(Node):
         return self.future.result()
 
 def drive_start():
-    pass
+    return Motors()
 
 def drive_run(drive, data):
-    pass
+    (l,r) = proses_motor(data)
+    drive.tank_drive(l,r)
 
 def network_start():
     HOST = "0.0.0.0"
@@ -123,18 +124,16 @@ def arm_run(arm, data):
     pass
 
 def main():
-    motors = Motors()
-
     rclpy.init()
     my_client = MyClient()
 
-    network = network_start();
+    drive = drive_start()
+    network = network_start()
 
     # rclpy.ok()
     while(True):
-        data = network_get(network);
-        (l,r) = proses_motor(data)
-        motors.tank_drive(l,r)
+        data = network_get(network)
+        drive_run(drive, data)
         response = my_client.send_request(data)
     #my_client.destroy_node()
     #rclpy.shutdown()
