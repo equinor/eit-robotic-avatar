@@ -42,6 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Addr::V6(_) =>None
         }
     }).collect();
+
     subject_alt_names.push("10.52.115.8".to_string());
 
     println!("Creating cert for: {}", subject_alt_names.join(" "));
