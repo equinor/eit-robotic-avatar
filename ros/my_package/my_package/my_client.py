@@ -118,26 +118,23 @@ def network_get(network):
     return json.loads(payload)
 
 def arm_start():
-    pass
+    rclpy.init()
+    return MyClient()
 
 def arm_run(arm, data):
-    pass
+    arm.send_request(data)
 
 def main():
-    rclpy.init()
-    my_client = MyClient()
-
     drive = drive_start()
     network = network_start()
+    arm = arm_start()
 
-    # rclpy.ok()
     while(True):
         data = network_get(network)
         drive_run(drive, data)
-        response = my_client.send_request(data)
+        arm_run(arm, data)
     #my_client.destroy_node()
     #rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()
