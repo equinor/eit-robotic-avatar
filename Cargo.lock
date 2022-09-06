@@ -173,6 +173,7 @@ dependencies = [
 name = "eit-robotic-avatar-minion"
 version = "0.1.0"
 dependencies = [
+ "rust_gpiozero",
  "serde",
  "serde_json",
 ]
@@ -364,6 +365,12 @@ checksum = "258451ab10b34f8af53416d1fdab72c22e805f0c92a1136d59470ec0b11138b2"
 dependencies = [
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "lazy_static"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
@@ -603,6 +610,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rppal"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eb26758c881b4837b2f4aef569e4251f75388e36b37204e1804ef429c220121c"
+dependencies = [
+ "lazy_static",
+ "libc",
+]
+
+[[package]]
 name = "rust-embed"
 version = "6.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -634,6 +651,15 @@ checksum = "756feca3afcbb1487a1d01f4ecd94cf8ec98ea074c55a69e7136d29fb6166029"
 dependencies = [
  "sha2",
  "walkdir",
+]
+
+[[package]]
+name = "rust_gpiozero"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef0e15226913de082030649dc55bb1db057ffc1c7c2b418454912a85b40523f3"
+dependencies = [
+ "rppal",
 ]
 
 [[package]]
