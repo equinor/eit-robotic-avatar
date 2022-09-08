@@ -1,6 +1,7 @@
-use std::{net::UdpSocket, sync::{Mutex, Arc}, thread};
+use std::{net::UdpSocket, sync::{Mutex, Arc}, thread, f64::consts::{PI, FRAC_PI_2}, time::Duration};
 
 use rust_gpiozero::{Motor, OutputDevice};
+use rustdds::{DomainParticipant, QosPolicyBuilder, policy, ros2::RosParticipant};
 use serde::Deserialize;
 
 fn main() {
@@ -18,11 +19,20 @@ fn main() {
         }
     });
 
+    let tracking_drive = tracking.clone();
+    thread::spawn( move || {
+        loop {
+            let lock = tracking_drive.lock().unwrap();
+            let data = *lock;
+            drop(lock);
+            drive_run(&mut drive, &data);
+        }
+    });
+
     loop {
         let lock = tracking.lock().unwrap();
         let data = *lock;
         drop(lock);
-        drive_run(&mut drive, &data);
         arm_run(arm, &data);
     }
 }
@@ -90,7 +100,7 @@ impl Drive {
 
 struct Wheel {
     motor: Motor,
-    enable: OutputDevice,
+    _enable: OutputDevice,
 }
 
 impl Wheel {
@@ -99,7 +109,7 @@ impl Wheel {
         enable.on();
         Self {
             motor: Motor::new(forward_pin, backward_pin),
-            enable
+            _enable: enable
         }
     }
 
@@ -133,7 +143,45 @@ fn drive_run(drive: &mut Drive, data: &Tracking) {
 }
 
 fn arm_start() {
-    println!("Arm controll not implmeted");
+    let mut ros_participant = RosParticipant::new().unwrap();
+
+    println!("Looking for topics");
+    let nodes = ros_participant.handle_node_read();
+    println!("{:?}", nodes);
+    thread::sleep(Duration::from_millis(1000));
+    let nodes = ros_participant.discovered_topics();
+    println!("{:?}", nodes);
 }
 
-fn arm_run(_arm: (), _data: &Tracking) {}
+fn arm_tranlation(rx: f64, ry: f64, rz: f64) -> (f64, f64, f64) {
+    let rx = rx * PI;
+    let ry = ry * PI;
+
+    // We dont want it to look backwards so we clamp it to +- half a PI
+    let rx = rx.clamp(-FRAC_PI_2, FRAC_PI_2);
+    let ry = ry.clamp(-FRAC_PI_2, FRAC_PI_2);
+
+    // RZ need to be handel spesialy as robot have strange gripper API.
+    let rz = rz.clamp(-0.25, 0.25);
+    let rz = rz * 0.02;
+
+    (rx,ry,rz)
+}
+
+fn arm_run(_arm: (), data: &Tracking) {
+    let (rx, ry, rz) = arm_tranlation(data.rx, data.ry, data.rz);
+
+    //println!("rx:{}, ry:{} rz:{}", rx, ry, rz);
+    thread::sleep(Duration::from_millis(500));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn arm_tranlation_posetive_limits() {
+        let out = arm_tranlation(1.0,1.0,1.0);
+        assert_eq!(out, (FRAC_PI_2,FRAC_PI_2,0.005));
+    }
+}
