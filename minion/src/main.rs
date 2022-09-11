@@ -1,7 +1,6 @@
 use std::{net::UdpSocket, sync::{Mutex, Arc}, thread, f64::consts::{PI, FRAC_PI_2}, time::Duration};
-
+use pyo3::{Python, types::{PyModule, PyDict}, PyResult, PyAny, Py};
 use rust_gpiozero::{Motor, OutputDevice};
-use rustdds::{DomainParticipant, QosPolicyBuilder, policy, ros2::RosParticipant};
 use serde::Deserialize;
 
 fn main() {
@@ -33,7 +32,7 @@ fn main() {
         let lock = tracking.lock().unwrap();
         let data = *lock;
         drop(lock);
-        arm_run(arm, &data);
+        arm_run(&arm, &data);
     }
 }
 
@@ -142,46 +141,39 @@ fn drive_run(drive: &mut Drive, data: &Tracking) {
     drive.set_speed(left, right);
 }
 
-fn arm_start() {
-    let mut ros_participant = RosParticipant::new().unwrap();
+/// The python code to controll the arm compiled in.
+const ARM_PY: &str = include_str!("./arm.py");
 
-    println!("Looking for topics");
-    let nodes = ros_participant.handle_node_read();
-    println!("{:?}", nodes);
-    thread::sleep(Duration::from_millis(1000));
-    let nodes = ros_participant.discovered_topics();
-    println!("{:?}", nodes);
+struct Arm {
+    module: Py<PyModule>,
+    object: Py<PyAny>
 }
 
-fn arm_tranlation(rx: f64, ry: f64, rz: f64) -> (f64, f64, f64) {
-    let rx = rx * PI;
-    let ry = ry * PI;
+fn arm_start() -> Arm {
+    Python::with_gil(|py| -> PyResult<Arm> {
+        // compile and run python code.
+        let arm_module = PyModule::from_code(py, ARM_PY, "arm.py", "arm")?;
 
-    // We dont want it to look backwards so we clamp it to +- half a PI
-    let rx = rx.clamp(-FRAC_PI_2, FRAC_PI_2);
-    let ry = ry.clamp(-FRAC_PI_2, FRAC_PI_2);
+        // run the arm_start function.
+        let arm_object = arm_module.getattr("arm_start")?.call0()?;
 
-    // RZ need to be handel spesialy as robot have strange gripper API.
-    let rz = rz.clamp(-0.25, 0.25);
-    let rz = rz * 0.02;
-
-    (rx,ry,rz)
+        Ok(Arm{
+            module: arm_module.into(),
+            object: arm_object.into()
+        })
+    }).unwrap()
 }
 
-fn arm_run(_arm: (), data: &Tracking) {
-    let (rx, ry, rz) = arm_tranlation(data.rx, data.ry, data.rz);
+fn arm_run(arm: &Arm, data: &Tracking) {
+    Python::with_gil(|py| -> PyResult<()> {
+        // Copy data into PyDict
+        let py_data = PyDict::new(py);
+        py_data.set_item("rx", data.rx)?;
+        py_data.set_item("ry", data.ry)?;
+        py_data.set_item("rz", data.rz)?;
 
-    //println!("rx:{}, ry:{} rz:{}", rx, ry, rz);
-    thread::sleep(Duration::from_millis(500));
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn arm_tranlation_posetive_limits() {
-        let out = arm_tranlation(1.0,1.0,1.0);
-        assert_eq!(out, (FRAC_PI_2,FRAC_PI_2,0.005));
-    }
+        // Call the run function
+        arm.module.getattr(py, "arm_run")?.call1(py, (&arm.object, py_data))?;
+        Ok(())
+    }).unwrap()
 }
