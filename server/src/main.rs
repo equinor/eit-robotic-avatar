@@ -10,14 +10,34 @@ use network_interface::{NetworkInterface, NetworkInterfaceConfig, Addr};
 use parking_lot::{const_mutex, Mutex};
 use rcgen::generate_simple_self_signed;
 use rust_embed::RustEmbed;
-use tokio::net::UdpSocket;
+use tokio::{net::UdpSocket, io};
+
+struct Config {
+    minion_udp_address: SocketAddr,
+    extra_cert_names: Vec<String>,
+    bind_address: SocketAddr,
+    https: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config { 
+            minion_udp_address: "10.52.119.109:6666".parse().unwrap(),
+            extra_cert_names: vec!["10.52.115.13".to_string()],
+            bind_address: "0.0.0.0:3000".parse().unwrap(),
+            https: true,
+        }
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load config
+    let config = Config::default();
+
     // Setup udp
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
-    let remote_addr = "10.52.119.109:6666".parse::<SocketAddr>().unwrap();
-    sock.connect(remote_addr).await?;
+    sock.connect(config.minion_udp_address).await?;
 
     // build our application with a single route
     let app = Router::new()
@@ -35,32 +55,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .fallback(get(static_handler));
 
-    let network_interfaces = NetworkInterface::show().unwrap();
-    let mut subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
-        match n.addr? {
-            Addr::V4(addr) => Some(addr.ip.to_string()),
-            Addr::V6(_) =>None
-        }
-    }).collect();
+    // Start the server based on config
+    serve(app, &config).await.unwrap();
+    Ok(())
+}
 
-    subject_alt_names.push("10.52.115.8".to_string());
+async fn serve(routes: Router, config: &Config ) -> io::Result<()>{
+    if config.https {
+        // Build a development cert based on networks found.      
+        let network_interfaces = NetworkInterface::show().unwrap();
+        let mut subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
+            match n.addr? {
+                Addr::V4(addr) => Some(addr.ip.to_string()),
+                Addr::V6(_) =>None
+            }
+        }).collect();
 
-    println!("Creating cert for: {}", subject_alt_names.join(" "));
+        // Add names from override.
+        let mut names = config.extra_cert_names.clone();
+        subject_alt_names.append(&mut names);
+        println!("Creating cert for: {}", subject_alt_names.join(" "));
 
-    let cert = generate_simple_self_signed(subject_alt_names).unwrap();
-    let config = RustlsConfig::from_der(
-        vec![cert.serialize_der().unwrap()],
-        cert.serialize_private_key_der(),
-    )
-    .await
-    .unwrap();
 
-    println!("Stating server on 0.0.0.0:3000. https://127.0.0.1:3000/");
-    axum_server::bind_rustls("0.0.0.0:3000".parse().unwrap(), config)
-        .serve(app.into_make_service())
+        let cert = generate_simple_self_signed(subject_alt_names).unwrap();
+        let tls_config = RustlsConfig::from_der(
+            vec![cert.serialize_der().unwrap()],
+            cert.serialize_private_key_der(),
+        )
         .await
         .unwrap();
-    Ok(())
+
+        println!("Binding server to {} using HTTPS", config.bind_address);
+        axum_server::bind_rustls("0.0.0.0:3000".parse().unwrap(), tls_config)
+            .serve(routes.into_make_service()).await
+
+    } else {
+        println!("Binding server to {} using HTTP", config.bind_address);
+        axum_server::bind(config.bind_address)
+        .serve(routes.into_make_service()).await
+    }
 }
 
 async fn index_handler() -> impl IntoResponse {
