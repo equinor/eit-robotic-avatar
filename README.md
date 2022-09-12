@@ -1,6 +1,11 @@
 # eit-robotic-avatar
 Move humans into robots. 
 
+## License and contribution
+This project is licensed under the MIT License se [LICENSE](./LICENSE) file.
+
+This repo hosts an experiment and will be archived after the trails are concluded. So we are not looking for outside contributions. If you find this repo interesting feel free to fork.
+
 ## Usage
 
 `cargo run` to start the main server application.
