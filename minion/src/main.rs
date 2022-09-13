@@ -1,7 +1,14 @@
-use std::{net::UdpSocket, sync::{Mutex, Arc}, thread, f64::consts::{PI, FRAC_PI_2}, time::Duration};
-use pyo3::{Python, types::{PyModule, PyDict}, PyResult, PyAny, Py};
+use pyo3::{
+    types::{PyDict, PyModule},
+    Py, PyAny, PyResult, Python,
+};
 use rust_gpiozero::{Motor, OutputDevice};
 use serde::Deserialize;
+use std::{
+    net::UdpSocket,
+    sync::{Arc, Mutex},
+    thread,
+};
 
 fn main() {
     let network = network_start();
@@ -11,21 +18,17 @@ fn main() {
     let tracking = Arc::new(Mutex::new(Tracking::default()));
 
     let tracking_net = tracking.clone();
-    thread::spawn( move || {
-        loop {
-            let data = network_get(&network); 
-            *tracking_net.lock().unwrap() = data;
-        }
+    thread::spawn(move || loop {
+        let data = network_get(&network);
+        *tracking_net.lock().unwrap() = data;
     });
 
     let tracking_drive = tracking.clone();
-    thread::spawn( move || {
-        loop {
-            let lock = tracking_drive.lock().unwrap();
-            let data = *lock;
-            drop(lock);
-            drive_run(&mut drive, &data);
-        }
+    thread::spawn(move || loop {
+        let lock = tracking_drive.lock().unwrap();
+        let data = *lock;
+        drop(lock);
+        drive_run(&mut drive, &data);
     });
 
     loop {
@@ -36,7 +39,7 @@ fn main() {
     }
 }
 
-
+#[allow(dead_code)]
 #[derive(Deserialize, Debug, Default, Clone, Copy)]
 struct Tracking {
     rx: f64,
@@ -46,6 +49,7 @@ struct Tracking {
     r: Controller,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug, Default, Clone, Copy)]
 struct Controller {
     x: f64,  // Thumb Sticks X
@@ -73,7 +77,7 @@ fn network_get(network: &UdpSocket) -> Tracking {
 
 struct Drive {
     front_left: Wheel,
-    front_right: Wheel, 
+    front_right: Wheel,
     back_left: Wheel,
     back_right: Wheel,
 }
@@ -82,10 +86,10 @@ impl Drive {
     fn new() -> Self {
         // Setting up the GPIO pins for the wheels.
         Self {
-            front_left: Wheel::new(20,16,21),
-            front_right: Wheel::new(13,19,26),
-            back_left: Wheel::new(23,24,25),
-            back_right: Wheel::new(17,27,22)
+            front_left: Wheel::new(20, 16, 21),
+            front_right: Wheel::new(13, 19, 26),
+            back_left: Wheel::new(23, 24, 25),
+            back_right: Wheel::new(17, 27, 22),
         }
     }
 
@@ -103,12 +107,12 @@ struct Wheel {
 }
 
 impl Wheel {
-    fn new(forward_pin: u8, backward_pin:u8, enable_pin: u8) -> Self{
+    fn new(forward_pin: u8, backward_pin: u8, enable_pin: u8) -> Self {
         let mut enable = OutputDevice::new(enable_pin);
         enable.on();
         Self {
             motor: Motor::new(forward_pin, backward_pin),
-            _enable: enable
+            _enable: enable,
         }
     }
 
@@ -116,7 +120,7 @@ impl Wheel {
         self.motor.set_speed(f64::abs(speed));
         if speed.signum() == 1.0 {
             self.motor.forward();
-        }else {
+        } else {
             self.motor.backward();
         }
     }
@@ -146,7 +150,7 @@ const ARM_PY: &str = include_str!("./arm.py");
 
 struct Arm {
     module: Py<PyModule>,
-    object: Py<PyAny>
+    object: Py<PyAny>,
 }
 
 fn arm_start() -> Arm {
@@ -157,11 +161,12 @@ fn arm_start() -> Arm {
         // run the arm_start function.
         let arm_object = arm_module.getattr("arm_start")?.call0()?;
 
-        Ok(Arm{
+        Ok(Arm {
             module: arm_module.into(),
-            object: arm_object.into()
+            object: arm_object.into(),
         })
-    }).unwrap()
+    })
+    .unwrap()
 }
 
 fn arm_run(arm: &Arm, data: &Tracking) {
@@ -173,7 +178,10 @@ fn arm_run(arm: &Arm, data: &Tracking) {
         py_data.set_item("rz", data.rz)?;
 
         // Call the run function
-        arm.module.getattr(py, "arm_run")?.call1(py, (&arm.object, py_data))?;
+        arm.module
+            .getattr(py, "arm_run")?
+            .call1(py, (&arm.object, py_data))?;
         Ok(())
-    }).unwrap()
+    })
+    .unwrap()
 }
