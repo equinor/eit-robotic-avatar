@@ -13,17 +13,18 @@ use network_interface::{Addr, NetworkInterface, NetworkInterfaceConfig};
 use parking_lot::{const_mutex, Mutex};
 use rcgen::generate_simple_self_signed;
 use rust_embed::RustEmbed;
-use tokio::{io, net::UdpSocket};
+use tokio::net::UdpSocket;
+use anyhow::Result;
 
 use crate::config::Config;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     // Load config
-    let config = Config::new();
+    let config = Config::load()?;
 
     // Setup udp
-    let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
+    let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>()?).await?);
     sock.connect(config.minion_udp_address).await?;
 
     // build our application with a single route
@@ -43,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .fallback(get(static_handler));
 
     // Start the server based on config
-    serve(app, &config).await.unwrap();
+    serve(app, &config).await?;
     Ok(())
 }
 
@@ -52,7 +53,7 @@ mod config {
     use dotenvy::dotenv;
     use figment::{Figment, providers::{Toml, Env, Format, Serialized}};
     use serde::{Deserialize, Serialize};
-    
+    use anyhow::Result;    
 
     #[derive(Debug, Deserialize, Serialize)]
     pub struct Config {
@@ -74,21 +75,20 @@ mod config {
     }
 
     impl Config {
-        pub fn new() -> Self {
+        pub fn load() -> Result<Self> {
             dotenv().ok();
-            Figment::from(Serialized::defaults(Config::default()))
+            Ok(Figment::from(Serialized::defaults(Config::default()))
                 .merge(Toml::file("avatar.toml"))
                 .merge(Env::prefixed("AVATAR_"))
-                .extract()
-                .unwrap()
+                .extract()?)
         }
     }
 }
 
-async fn serve(routes: Router, config: &Config) -> io::Result<()> {
+async fn serve(routes: Router, config: &Config) -> Result<()> {
     if config.https {
         // Build a development cert based on networks found.
-        let network_interfaces = NetworkInterface::show().unwrap();
+        let network_interfaces = NetworkInterface::show()?;
         let mut subject_alt_names: Vec<_> = network_interfaces
             .iter()
             .filter_map(|n| match n.addr? {
@@ -102,23 +102,22 @@ async fn serve(routes: Router, config: &Config) -> io::Result<()> {
         subject_alt_names.append(&mut names);
         println!("Creating cert for: {}", subject_alt_names.join(" "));
 
-        let cert = generate_simple_self_signed(subject_alt_names).unwrap();
+        let cert = generate_simple_self_signed(subject_alt_names)?;
         let tls_config = RustlsConfig::from_der(
-            vec![cert.serialize_der().unwrap()],
+            vec![cert.serialize_der()?],
             cert.serialize_private_key_der(),
         )
-        .await
-        .unwrap();
+        .await?;
 
         println!("Binding server to {} using HTTPS", config.bind_address);
-        axum_server::bind_rustls(config.bind_address, tls_config)
+        Ok(axum_server::bind_rustls(config.bind_address, tls_config)
             .serve(routes.into_make_service())
-            .await
+            .await?)
     } else {
         println!("Binding server to {} using HTTP", config.bind_address);
-        axum_server::bind(config.bind_address)
+        Ok(axum_server::bind(config.bind_address)
             .serve(routes.into_make_service())
-            .await
+            .await?)
     }
 }
 
