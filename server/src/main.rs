@@ -1,39 +1,26 @@
 use std::{net::SocketAddr, sync::Arc};
 
+
 use axum::{
+    body::{boxed, Full},
+    response::{IntoResponse, Response},
     routing::{get, post},
-    Router, response::{IntoResponse, Response}, body::{boxed, Full},
+    Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
-use hyper::{StatusCode, Uri, header};
-use network_interface::{NetworkInterface, NetworkInterfaceConfig, Addr};
+use hyper::{header, StatusCode, Uri};
+use network_interface::{Addr, NetworkInterface, NetworkInterfaceConfig};
 use parking_lot::{const_mutex, Mutex};
 use rcgen::generate_simple_self_signed;
 use rust_embed::RustEmbed;
-use tokio::{net::UdpSocket, io};
+use tokio::{io, net::UdpSocket};
 
-struct Config {
-    minion_udp_address: SocketAddr,
-    extra_cert_names: Vec<String>,
-    bind_address: SocketAddr,
-    https: bool,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Config { 
-            minion_udp_address: "10.52.119.109:6666".parse().unwrap(),
-            extra_cert_names: vec!["10.52.115.13".to_string()],
-            bind_address: "0.0.0.0:3000".parse().unwrap(),
-            https: true,
-        }
-    }
-}
+use crate::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load config
-    let config = Config::default();
+    let config = Config::new();
 
     // Setup udp
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).await?);
@@ -60,22 +47,60 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn serve(routes: Router, config: &Config ) -> io::Result<()>{
-    if config.https {
-        // Build a development cert based on networks found.      
-        let network_interfaces = NetworkInterface::show().unwrap();
-        let mut subject_alt_names: Vec<_> = network_interfaces.iter().filter_map(| n | {
-            match n.addr? {
-                Addr::V4(addr) => Some(addr.ip.to_string()),
-                Addr::V6(_) =>None
+mod config {
+    use std::net::SocketAddr;
+    use dotenvy::dotenv;
+    use figment::{Figment, providers::{Toml, Env, Format, Serialized}};
+    use serde::{Deserialize, Serialize};
+    
+
+    #[derive(Debug, Deserialize, Serialize)]
+    pub struct Config {
+        pub minion_udp_address: SocketAddr,
+        pub extra_cert_names: Vec<String>,
+        pub bind_address: SocketAddr,
+        pub https: bool,
+    }
+
+    impl Default for Config {
+        fn default() -> Self {
+            Config {
+                minion_udp_address: "192.168.41.58:6666".parse().unwrap(),
+                extra_cert_names: vec!["192.168.41.33".to_string()],
+                bind_address: "0.0.0.0:3000".parse().unwrap(),
+                https: true,
             }
-        }).collect();
+        }
+    }
+
+    impl Config {
+        pub fn new() -> Self {
+            dotenv().ok();
+            Figment::from(Serialized::defaults(Config::default()))
+                .merge(Toml::file("avatar.toml"))
+                .merge(Env::prefixed("AVATAR_"))
+                .extract()
+                .unwrap()
+        }
+    }
+}
+
+async fn serve(routes: Router, config: &Config) -> io::Result<()> {
+    if config.https {
+        // Build a development cert based on networks found.
+        let network_interfaces = NetworkInterface::show().unwrap();
+        let mut subject_alt_names: Vec<_> = network_interfaces
+            .iter()
+            .filter_map(|n| match n.addr? {
+                Addr::V4(addr) => Some(addr.ip.to_string()),
+                Addr::V6(_) => None,
+            })
+            .collect();
 
         // Add names from override.
         let mut names = config.extra_cert_names.clone();
         subject_alt_names.append(&mut names);
         println!("Creating cert for: {}", subject_alt_names.join(" "));
-
 
         let cert = generate_simple_self_signed(subject_alt_names).unwrap();
         let tls_config = RustlsConfig::from_der(
@@ -86,13 +111,14 @@ async fn serve(routes: Router, config: &Config ) -> io::Result<()>{
         .unwrap();
 
         println!("Binding server to {} using HTTPS", config.bind_address);
-        axum_server::bind_rustls("0.0.0.0:3000".parse().unwrap(), tls_config)
-            .serve(routes.into_make_service()).await
-
+        axum_server::bind_rustls(config.bind_address, tls_config)
+            .serve(routes.into_make_service())
+            .await
     } else {
         println!("Binding server to {} using HTTP", config.bind_address);
         axum_server::bind(config.bind_address)
-        .serve(routes.into_make_service()).await
+            .serve(routes.into_make_service())
+            .await
     }
 }
 
