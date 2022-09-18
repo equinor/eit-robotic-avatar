@@ -4,8 +4,9 @@ mod server;
 mod minion;
 
 use anyhow::Result;
+use axum::Router;
 
-use crate::config::Config;
+pub use crate::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -13,7 +14,13 @@ async fn main() -> Result<()> {
     let config = Config::load()?;
 
     // Load modules
-    let app = legacy::route(&config).await?;
+    let legacy = legacy::route(&config).await?;
+    let minion = minion::setup().await?;
+
+    // Create app router
+    let app = Router::new()
+        .merge(legacy)
+        .nest("/minion", minion); 
 
     // Start the server based on config
     server::serve(app, &config).await?;
