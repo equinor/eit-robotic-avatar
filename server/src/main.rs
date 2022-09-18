@@ -1,6 +1,7 @@
 mod config;
 mod legacy;
 mod server;
+mod minion;
 
 use anyhow::Result;
 
