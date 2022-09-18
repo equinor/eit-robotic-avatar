@@ -15,10 +15,10 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            minion_udp_address: "192.168.41.58:6666".parse().unwrap(),
-            extra_cert_names: vec!["192.168.41.33".to_string()],
+            minion_udp_address: "127.0.0.1:6666".parse().unwrap(),
+            extra_cert_names: vec![],
             bind_address: "0.0.0.0:3000".parse().unwrap(),
-            https: true,
+            https: false,
         }
     }
 }

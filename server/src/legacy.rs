@@ -8,6 +8,7 @@ use tokio::net::UdpSocket;
 
 pub async fn route(config: &Config) -> Result<Router> {
     let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>()?).await?);
+    println!("Connecting to minion robot at: {}", config.minion_udp_address);
     sock.connect(config.minion_udp_address).await?;
 
     let router = Router::new()
