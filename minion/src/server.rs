@@ -1,8 +1,8 @@
-use std::{net::UdpSocket, thread, sync::Arc};
+use std::{net::UdpSocket, sync::Arc, thread};
 
+use anyhow::{Context, Result};
 use parking_lot::Mutex;
 use serde::Deserialize;
-use anyhow::{Result, Context};
 
 use crate::config::LocalConfig;
 
@@ -41,29 +41,31 @@ pub struct Drive {
 #[derive(Clone)]
 pub struct Server {
     socket: Arc<UdpSocket>,
-    tracking: Arc<Mutex<Tracking>>
+    tracking: Arc<Mutex<Tracking>>,
 }
 
 impl Server {
     pub fn new(config: &LocalConfig) -> Result<Self> {
         Ok(Server {
             socket: Arc::new(UdpSocket::bind(config.udp_address).context("UDP failed to bind")?),
-            tracking: Arc::default()
+            tracking: Arc::default(),
         })
     }
-    
+
     /// Starts sever in a diffrent tread.
     pub fn start(&self) {
         let server = self.clone();
         thread::spawn(move || loop {
             let mut buf = [0; 512];
-            let (amt, _src) = server.socket
+            let (amt, _src) = server
+                .socket
                 .recv_from(&mut buf)
                 .expect("Read from network error");
-            
+
             let mut tracking = server.tracking.lock();
-            *tracking = serde_json::from_slice(&buf[..amt]).expect("Faild to parse tracking message")
-        });       
+            *tracking =
+                serde_json::from_slice(&buf[..amt]).expect("Faild to parse tracking message")
+        });
     }
 
     pub fn head(&self) -> Head {
