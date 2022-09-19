@@ -1,46 +1,6 @@
 
-mod config {
-    use std::{net::SocketAddr, env::{self, VarError}};
-    use anyhow::{Result, Context, bail};
-    use dotenvy::dotenv;
-
-    /// Local robot config from enviroment.
-    /// 
-    /// Minium needed to contact centrall controll server.
-    /// All the other settings shuld be gotten from server.
-    pub struct LocalConfig{
-        pub udp_address: SocketAddr, // Adress to be used by UDP server.
-    }
-
-    impl Default for LocalConfig {
-        fn default() -> Self {
-            Self { 
-                udp_address: "0.0.0.0:6666".parse().unwrap(), 
-            }
-        }
-    }
-
-    impl LocalConfig {
-        pub fn from_env() -> Result<LocalConfig> {
-            dotenv().ok();
-
-            let mut config = LocalConfig::default();
-
-            match env::var("MINION_UDP_ADDRESS") {
-                Ok(value) => config.udp_address = value.parse().context("MINION_UDP_ADDRESS must be a valid socket adress 0.0.0.0:6666")?,
-                Err(VarError::NotPresent) => (),
-                Err(err) => bail!(err)
-            }
-
-            Ok(config)
-        }
-    }
-
-}
-
-mod server {
-
-}
+mod config;
+mod server;
 
 mod drive {
 
@@ -56,10 +16,8 @@ use pyo3::{
     Py, PyAny, PyResult, Python,
 };
 use rust_gpiozero::{Motor, OutputDevice};
-use serde::Deserialize;
+use server::{Server, Head};
 use std::{
-    net::UdpSocket,
-    sync::{Arc, Mutex},
     thread,
 };
 
@@ -68,67 +26,20 @@ use anyhow::Result;
 fn main() -> Result<()> {
     let config = LocalConfig::from_env()?;
 
-    let network = network_start(&config);
+    let server = Server::new(&config)?;
+    server.start();
+
     let mut drive = drive_start();
     let arm = arm_start();
 
-    let tracking = Arc::new(Mutex::new(Tracking::default()));
-
-    let tracking_net = tracking.clone();
+    let server_drive = server.clone();
     thread::spawn(move || loop {
-        let data = network_get(&network);
-        *tracking_net.lock().unwrap() = data;
-    });
-
-    let tracking_drive = tracking.clone();
-    thread::spawn(move || loop {
-        let lock = tracking_drive.lock().unwrap();
-        let data = *lock;
-        drop(lock);
-        drive_run(&mut drive, &data);
+        drive_run(&mut drive, server_drive.drive());
     });
 
     loop {
-        let lock = tracking.lock().expect("Tracking mutex is poisonius");
-        let data = *lock;
-        drop(lock);
-        arm_run(&arm, &data);
+        arm_run(&arm, server.head());
     }
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Default, Clone, Copy)]
-struct Tracking {
-    rx: f64,
-    ry: f64,
-    rz: f64,
-    l: Controller,
-    r: Controller,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize, Debug, Default, Clone, Copy)]
-struct Controller {
-    x: f64,  // Thumb Sticks X
-    y: f64,  // Thumb Sticks X
-    a: bool, // A or X button
-    b: bool, // B or Y button
-    c: f64,  // Trigger
-    d: f64,  // Grip
-}
-
-fn network_start(config: &LocalConfig) -> UdpSocket {
-    println!("Binding to UDP:{}", config.udp_address);
-    UdpSocket::bind(config.udp_address).expect("UDP failed to bind")
-}
-
-fn network_get(network: &UdpSocket) -> Tracking {
-    let mut buf = [0; 512];
-    let (amt, _src) = network
-        .recv_from(&mut buf)
-        .expect("Read from network error");
-
-    serde_json::from_slice(&buf[..amt]).expect("Faild to parse tracking message")
 }
 
 struct Drive {
@@ -187,10 +98,9 @@ fn drive_start() -> Drive {
     Drive::new()
 }
 
-fn drive_run(drive: &mut Drive, data: &Tracking) {
-    let controller = &data.l;
-    let y = controller.y;
-    let x = controller.x;
+fn drive_run(drive: &mut Drive, data: server::Drive) {
+    let y = data.speed;
+    let x = data.turn;
 
     let w = (1.0 - f64::abs(y)) * (x) + x;
     let v = (1.0 - f64::abs(x)) * (y) + y;
@@ -225,7 +135,7 @@ fn arm_start() -> Arm {
     .unwrap()
 }
 
-fn arm_run(arm: &Arm, data: &Tracking) {
+fn arm_run(arm: &Arm, data: Head) {
     Python::with_gil(|py| -> PyResult<()> {
         // Copy data into PyDict
         let py_data = PyDict::new(py);

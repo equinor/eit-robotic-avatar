@@ -473,6 +473,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dotenvy",
+ "parking_lot",
  "pyo3",
  "rust_gpiozero",
  "serde",
