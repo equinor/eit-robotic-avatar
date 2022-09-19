@@ -1,6 +1,8 @@
 mod model {
     use std::sync::Arc;
 
+    use common::{Head, Drive};
+    use parking_lot::Mutex;
     use time::OffsetDateTime;
 
     #[allow(dead_code)]
@@ -9,19 +11,6 @@ mod model {
         NotReady, // Minion robot have connected but is not ready. (Its staring or stopping)
         Running, // Ready and willing.
         Timeout, // The minion robot have missed a few check ins. (It should have stopped moving.)  
-    }
-
-    #[allow(dead_code)]
-    struct Head {
-        rx: f64,
-        ry: f64,
-        rz: f64,
-    }
-
-    #[allow(dead_code)]
-    struct Drive { 
-        speed: f64,
-        turn: f64,
     }
 
     #[allow(dead_code)]
@@ -43,7 +32,7 @@ mod model {
     #[derive(Clone)]
     pub struct Minion {
         status: Arc<Status>,
-        movement: Arc<(Head, Drive)>,
+        movement: Arc<Mutex<(Head, Drive)>>,
         log: Arc<Vec<LogEntry>>,
         stream: Arc<Stream>,
     }
@@ -52,10 +41,20 @@ mod model {
         fn default() -> Minion {
             Minion { 
                 status: Arc::new(Status::Offline),
-                movement: Arc::new((Head { rx: 0.0, ry: 0.0, rz: 0.0 }, Drive { speed: 0.0, turn: 0.0 })),
+                movement: Arc::default(),
                 log: Arc::new(Vec::new()),
                 stream: Arc::new(Stream::Disconnected),
             }
+        }
+    }
+
+    impl Minion {
+        pub fn movement(&self) -> (Head, Drive) {
+            *self.movement.lock()
+        }
+
+        pub fn movement_set(&mut self, head: Head, drive: Drive ){
+            *self.movement.lock() = (head, drive)
         }
     }
 
@@ -64,6 +63,7 @@ mod model {
 mod front{
     use anyhow::{Result, Ok};
     use axum::{Router, Extension, routing::get, Json};
+    use common::Tracking;
     use serde::Serialize;
 
     use super::model::Minion;
@@ -73,6 +73,7 @@ mod front{
 
         let router = Router::new()
             .route("/", get(status))
+            .route("/tracking", get(tracking_get).post(tracking_post))
             .layer(Extension(minion));
 
         Ok(router)
@@ -85,6 +86,16 @@ mod front{
 
     async fn status(Extension(_minion): Extension<Minion>) -> Json<Status> {
         Json(Status {})
+    }
+
+    async fn tracking_get(Extension(minion): Extension<Minion>) -> Json<Tracking> {
+        let (head, drive) = minion.movement();
+        Json(Tracking{head, drive})
+    }
+
+    async fn tracking_post(Extension(mut minion): Extension<Minion>, Json(tracking): Json<Tracking>) {
+        println!("{:?}", tracking);
+        minion.movement_set(tracking.head, tracking.drive)
     }
 }
 

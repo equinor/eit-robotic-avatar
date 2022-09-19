@@ -1,14 +1,20 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+pub struct Tracking { 
+    pub head: Head,
+    pub drive: Drive,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+pub struct Head {
+    pub rx: f64,
+    pub ry: f64,
+    pub rz: f64,
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
+pub struct Drive { 
+    pub speed: f64,
+    pub turn: f64,
 }

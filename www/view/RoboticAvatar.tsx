@@ -3,7 +3,7 @@ import { listDevices, loadCams } from "../modules/cameras";
 import { fromOffers, fromStreams } from "../modules/rtc";
 import { postAnswer, postOffers, postTracking, pullAnswer, pullOffers } from "../modules/server";
 import styled, { createGlobalStyle } from "styled-components";
-import Viewport, { Tracking } from "../view/Viewport";
+import Viewport, { Tracking as ViewTrack } from "../view/Viewport";
 
 const GlobalStyle = createGlobalStyle`
     html, body, #robotic_avatar {
@@ -151,11 +151,21 @@ export class RoboticAvatar extends React.Component<{}, State> {
         }
     } 
 
-    handleTracking = async (track: Tracking) => {
+    handleTracking = async (track: ViewTrack) => {
         try {
             if(this.sending) return;
             this.sending = true;
-            await postTracking(track);
+            await postTracking({
+                head: {
+                    rx: track.rx,
+                    ry: track.ry,
+                    rz: track.rz,
+                },
+                drive: {
+                    speed: track.l.y,
+                    turn: track.l.x,
+                }
+            });
             this.sending = false;
         } catch (err) {
             console.log(err);
