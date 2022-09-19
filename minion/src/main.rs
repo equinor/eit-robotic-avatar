@@ -1,3 +1,56 @@
+
+mod config {
+    use std::{net::SocketAddr, env::{self, VarError}};
+    use anyhow::{Result, Context, bail};
+    use dotenvy::dotenv;
+
+    /// Local robot config from enviroment.
+    /// 
+    /// Minium needed to contact centrall controll server.
+    /// All the other settings shuld be gotten from server.
+    pub struct LocalConfig{
+        pub udp_address: SocketAddr, // Adress to be used by UDP server.
+    }
+
+    impl Default for LocalConfig {
+        fn default() -> Self {
+            Self { 
+                udp_address: "0.0.0.0:6666".parse().unwrap(), 
+            }
+        }
+    }
+
+    impl LocalConfig {
+        pub fn from_env() -> Result<LocalConfig> {
+            dotenv().ok();
+
+            let mut config = LocalConfig::default();
+
+            match env::var("MINION_UDP_ADDRESS") {
+                Ok(value) => config.udp_address = value.parse().context("MINION_UDP_ADDRESS must be a valid socket adress 0.0.0.0:6666")?,
+                Err(VarError::NotPresent) => (),
+                Err(err) => bail!(err)
+            }
+
+            Ok(config)
+        }
+    }
+
+}
+
+mod server {
+
+}
+
+mod drive {
+
+}
+
+mod arm {
+
+}
+
+use config::LocalConfig;
 use pyo3::{
     types::{PyDict, PyModule},
     Py, PyAny, PyResult, Python,
@@ -10,8 +63,12 @@ use std::{
     thread,
 };
 
-fn main() {
-    let network = network_start();
+use anyhow::Result;
+
+fn main() -> Result<()> {
+    let config = LocalConfig::from_env()?;
+
+    let network = network_start(&config);
     let mut drive = drive_start();
     let arm = arm_start();
 
@@ -32,7 +89,7 @@ fn main() {
     });
 
     loop {
-        let lock = tracking.lock().unwrap();
+        let lock = tracking.lock().expect("Tracking mutex is poisonius");
         let data = *lock;
         drop(lock);
         arm_run(&arm, &data);
@@ -60,10 +117,9 @@ struct Controller {
     d: f64,  // Grip
 }
 
-fn network_start() -> UdpSocket {
-    const ADDRESS: &str = "0.0.0.0:6666";
-    println!("Binding to UDP:{}", ADDRESS);
-    UdpSocket::bind(ADDRESS).expect("UDP failed to bind")
+fn network_start(config: &LocalConfig) -> UdpSocket {
+    println!("Binding to UDP:{}", config.udp_address);
+    UdpSocket::bind(config.udp_address).expect("UDP failed to bind")
 }
 
 fn network_get(network: &UdpSocket) -> Tracking {
