@@ -16,8 +16,13 @@ pub struct Server {
 
 impl Server {
     pub fn new(config: &LocalConfig) -> Result<Self> {
+        let client = Client::builder()
+            .danger_accept_invalid_certs(true) // Nesery evil for now!!!!
+            .use_rustls_tls()
+            .build()?;
+
         Ok(Server {
-            http: Client::new(),
+            http: client,
             baseurl: config.server.clone(),
             tracking: Arc::default(),
         })
