@@ -1,7 +1,5 @@
 use rust_gpiozero::{Motor, OutputDevice};
 
-use crate::server;
-
 pub struct Drive {
     front_left: Wheel,
     front_right: Wheel,
@@ -58,7 +56,7 @@ pub fn drive_start() -> Drive {
     Drive::new()
 }
 
-pub fn drive_run(drive: &mut Drive, data: server::Drive) {
+pub fn drive_run(drive: &mut Drive, data: common::Drive) {
     let y = data.speed;
     let x = data.turn;
 

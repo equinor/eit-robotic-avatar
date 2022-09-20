@@ -1,22 +1,20 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use dotenvy::dotenv;
-use std::{
-    env::{self, VarError},
-    net::SocketAddr,
-};
+use reqwest::Url;
+use std::env;
 
-/// Local robot config from enviroment.
+/// Local robot config from environment.
 ///
-/// Minium needed to contact centrall controll server.
-/// All the other settings shuld be gotten from server.
+/// Minium needed to contact central control server.
+/// All the other settings should be gotten from server.
 pub struct LocalConfig {
-    pub udp_address: SocketAddr, // Adress to be used by UDP server.
+    pub server: Url, // Address to be used by UDP server.
 }
 
 impl Default for LocalConfig {
     fn default() -> Self {
         Self {
-            udp_address: "0.0.0.0:6666".parse().unwrap(),
+            server: Url::parse("http://localhost/").unwrap(),
         }
     }
 }
@@ -25,18 +23,10 @@ impl LocalConfig {
     pub fn from_env() -> Result<LocalConfig> {
         dotenv().ok();
 
-        let mut config = LocalConfig::default();
+        const MINION_SERVER: &str = "MINION_SERVER";
+        let server = env::var("MINION_SERVER").context(format!("{} env variable must be set to the server url", MINION_SERVER))?;
+        let server = Url::parse(&server).context(format!("{} needs to be a valid URL got {} ", MINION_SERVER, server ))?;
 
-        match env::var("MINION_UDP_ADDRESS") {
-            Ok(value) => {
-                config.udp_address = value
-                    .parse()
-                    .context("MINION_UDP_ADDRESS must be a valid socket adress 0.0.0.0:6666")?
-            }
-            Err(VarError::NotPresent) => (),
-            Err(err) => bail!(err),
-        }
-
-        Ok(config)
+        Ok(LocalConfig { server })
     }
 }
