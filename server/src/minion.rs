@@ -94,7 +94,6 @@ mod front{
     }
 
     async fn tracking_post(Extension(mut minion): Extension<Minion>, Json(tracking): Json<Tracking>) {
-        println!("{:?}", tracking);
         minion.movement_set(tracking.head, tracking.drive)
     }
 }

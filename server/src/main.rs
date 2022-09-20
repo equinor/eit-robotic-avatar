@@ -14,7 +14,7 @@ async fn main() -> Result<()> {
     let config = Config::load()?;
 
     // Load modules
-    let legacy = legacy::route(&config).await?;
+    let legacy = legacy::route().await?;
     let minion = minion::setup().await?;
 
     // Create app router
