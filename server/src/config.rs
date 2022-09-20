@@ -6,7 +6,6 @@ use anyhow::Result;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
-    pub minion_udp_address: SocketAddr,
     pub extra_cert_names: Vec<String>,
     pub bind_address: SocketAddr,
     pub https: bool,
@@ -15,7 +14,6 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Config {
-            minion_udp_address: "127.0.0.1:6666".parse().unwrap(),
             extra_cert_names: vec![],
             bind_address: "0.0.0.0:3000".parse().unwrap(),
             https: false,

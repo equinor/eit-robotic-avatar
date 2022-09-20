@@ -1,9 +1,8 @@
+use common::Head;
 use pyo3::{
     types::{PyDict, PyModule},
     Py, PyAny, PyResult, Python,
 };
-
-use crate::server::Head;
 
 /// The python code to controll the arm compiled in.
 const ARM_PY: &str = include_str!("./arm.py");

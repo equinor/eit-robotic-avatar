@@ -1,4 +1,4 @@
-import { Tracking } from "../view/Viewport";
+
 
 export async function postOffers(offers) {
     return await postRtc("./post_offer", offers);
@@ -18,8 +18,26 @@ export async function pullAnswer() {
     return await pullRtc("./get_answer");
 }
 
+export interface Tracking { 
+    head: Head,
+    drive: Drive,
+}
+
+
+export interface  Head {
+    rx: number,
+    ry: number,
+    rz: number,
+}
+
+
+export interface  Drive { 
+    speed: number,
+    turn: number,
+}
+
 export async function postTracking(tracking: Tracking) {
-    return await postRtc("./post_tracking", tracking);
+    return await postRtc("/minion/tracking", tracking);
 }
 
 /* ---- Private stuff --- */

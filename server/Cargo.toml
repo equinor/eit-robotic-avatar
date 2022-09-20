@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+common = { path = "../common" }
+
 axum = "0.5.15"
 hyper = { version = "0.14.20", features = ["full"] }
 tokio = { version = "1.20.0", features = ["full"] }

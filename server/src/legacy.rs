@@ -1,28 +1,13 @@
-use std::{sync::Arc, net::SocketAddr};
-
-use crate::config::Config;
 use anyhow::Result;
 use axum::{routing::{post, get}, Router};
 use parking_lot::{Mutex, const_mutex};
-use tokio::net::UdpSocket;
 
-pub async fn route(config: &Config) -> Result<Router> {
-    let sock = Arc::new(UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>()?).await?);
-    println!("Connecting to minion robot at: {}", config.minion_udp_address);
-    sock.connect(config.minion_udp_address).await?;
-
+pub async fn route() -> Result<Router> {
     let router = Router::new()
         .route("/post_offer", post(post_offer))
         .route("/get_offer", get(get_offer))
         .route("/post_answer", post(post_answer))
-        .route("/get_answer", get(get_answer))
-        .route(
-            "/post_tracking",
-            post({
-                let sock = Arc::clone(&sock);
-                move |body| post_tracking(body, Arc::clone(&sock))
-            }),
-        );
+        .route("/get_answer", get(get_answer));
     Ok(router)
 }
 
@@ -60,9 +45,4 @@ async fn get_answer() -> String {
     } else {
         answer.clone()
     }
-}
-
-async fn post_tracking(body: String, sock: Arc<UdpSocket>) {
-    sock.send(body.as_bytes()).await.unwrap();
-    //println!("{}", body)
 }
