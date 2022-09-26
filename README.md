@@ -1,5 +1,9 @@
-# eit-robotic-avatar
-Move humans into robots. 
+# EIT Robotic Avatar
+Move humans into robots.
+
+## Archived 
+The development of robotics avatars have move to a new repository: https://github.com/equinor/eit-robotic-avatar-two . 
+
 
 ## License and contribution
 This project is licensed under the MIT License se [LICENSE](./LICENSE) file.
